@@ -99,8 +99,6 @@ npm run build
 A pasta [`docs/`](docs/) reúne documentação técnica mais aprofundada:
 
 - [`documentacao-tecnica.md`](docs/documentacao-tecnica.md) — arquitetura, modelo de dados, endpoints da API e segurança.
-- [`checklist-deploy.md`](docs/checklist-deploy.md) — passo a passo e checklist para deploy no Render/Vercel.
-- [`guia-empresa.md`](docs/guia-empresa.md) — guia de uso da interface de empresas.
 - [`historico-evolucao.md`](docs/historico-evolucao.md) — histórico de versão do projeto por fase.
 
 ## Contribuindo
