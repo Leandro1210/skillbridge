@@ -1,0 +1,35 @@
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+venv/
+env/
+.venv/
+staticfiles/
+media/
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# Node / Vite (frontend has its own .gitignore too, kept here as a safety net)
+node_modules/
+dist/
+.vite/
+
+# Editors / tools
+.vscode/
+.idea/
+.qodo/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

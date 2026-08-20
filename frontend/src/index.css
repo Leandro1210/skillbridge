@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+/* ===================================================================
+   SkillBridge — Design System
+   Baseado no Material Design 3 (M3) — https://m3.material.io/
+   Esquema escuro, papéis de cor e escala tipográfica seguindo a
+   estrutura de tokens do M3 (primary/secondary/tertiary + neutros de
+   superfície em 5 níveis + papéis on-X e X-container).
+   =================================================================== */
+
+@theme {
+  /* -----------------------------------------------------------------
+     Cor — Primary (semente teal: crescimento/domínio de habilidade)
+     ----------------------------------------------------------------- */
+  --color-primary: #6fdbd1;
+  --color-on-primary: #003733;
+  --color-primary-container: #004f49;
+  --color-on-primary-container: #94f2e7;
+
+  /* Secondary — teal dessaturado, ações secundárias */
+  --color-secondary: #b2ccc7;
+  --color-on-secondary: #1d3531;
+  --color-secondary-container: #334b47;
+  --color-on-secondary-container: #cee9e3;
+
+  /* Tertiary — dourado, usado com moderação (XP, destaques, nível) */
+  --color-tertiary: #e8c177;
+  --color-on-tertiary: #402d00;
+  --color-tertiary-container: #5c4200;
+  --color-on-tertiary-container: #ffdea6;
+
+  /* Error */
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* Superfícies — neutros com leve viés teal, 5 níveis de elevação
+     tonal (M3 substitui sombra colorida por variação de tom) */
+  --color-surface-dim: #0f1513;
+  --color-surface: #0f1513;
+  --color-surface-bright: #353b39;
+  --color-surface-container-lowest: #0a0f0d;
+  --color-surface-container-low: #171d1b;
+  --color-surface-container: #1b211f;
+  --color-surface-container-high: #252b29;
+  --color-surface-container-highest: #303633;
+
+  --color-on-surface: #dee4e1;
+  --color-on-surface-variant: #bfc9c5;
+  --color-surface-variant: #3f4946;
+
+  --color-outline: #899390;
+  --color-outline-variant: #3f4946;
+
+  --color-inverse-surface: #dee4e1;
+  --color-inverse-on-surface: #2c3230;
+  --color-inverse-primary: #146b62;
+
+  --color-scrim: #000000;
+
+  /* -----------------------------------------------------------------
+     Forma — escala M3 (none/xs/sm/md/lg/xl/full)
+     ----------------------------------------------------------------- */
+  --radius-none: 0;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.75rem;
+  --radius-full: 9999px;
+
+  /* -----------------------------------------------------------------
+     Elevação — sombras neutras e discretas (M3 dark usa tom de
+     superfície como sinal primário; a sombra é só um reforço leve)
+     ----------------------------------------------------------------- */
+  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --shadow-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --shadow-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  /* -----------------------------------------------------------------
+     Tipografia — Roboto, escala M3 (papéis usados nesta app)
+     ----------------------------------------------------------------- */
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --text-headline-large: 2rem;
+  --text-headline-large--line-height: 2.5rem;
+  --text-headline-large--font-weight: 400;
+
+  --text-headline-medium: 1.75rem;
+  --text-headline-medium--line-height: 2.25rem;
+  --text-headline-medium--font-weight: 400;
+
+  --text-headline-small: 1.5rem;
+  --text-headline-small--line-height: 2rem;
+  --text-headline-small--font-weight: 400;
+
+  --text-title-large: 1.375rem;
+  --text-title-large--line-height: 1.75rem;
+  --text-title-large--font-weight: 500;
+
+  --text-title-medium: 1rem;
+  --text-title-medium--line-height: 1.5rem;
+  --text-title-medium--font-weight: 500;
+  --text-title-medium--letter-spacing: 0.009375em;
+
+  --text-title-small: 0.875rem;
+  --text-title-small--line-height: 1.25rem;
+  --text-title-small--font-weight: 500;
+  --text-title-small--letter-spacing: 0.00714em;
+
+  --text-body-large: 1rem;
+  --text-body-large--line-height: 1.5rem;
+  --text-body-large--font-weight: 400;
+
+  --text-body-medium: 0.875rem;
+  --text-body-medium--line-height: 1.25rem;
+  --text-body-medium--font-weight: 400;
+  --text-body-medium--letter-spacing: 0.01786em;
+
+  --text-body-small: 0.75rem;
+  --text-body-small--line-height: 1rem;
+  --text-body-small--font-weight: 400;
+  --text-body-small--letter-spacing: 0.03333em;
+
+  --text-label-large: 0.875rem;
+  --text-label-large--line-height: 1.25rem;
+  --text-label-large--font-weight: 500;
+  --text-label-large--letter-spacing: 0.00714em;
+
+  --text-label-medium: 0.75rem;
+  --text-label-medium--line-height: 1rem;
+  --text-label-medium--font-weight: 500;
+  --text-label-medium--letter-spacing: 0.03333em;
+
+  --text-label-small: 0.6875rem;
+  --text-label-small--line-height: 1rem;
+  --text-label-small--font-weight: 500;
+  --text-label-small--letter-spacing: 0.03571em;
+
+  /* -----------------------------------------------------------------
+     Animação — restrita e intencional (entrada em nível de
+     seção/grupo, não por elemento individual)
+     ----------------------------------------------------------------- */
+  --animate-fade-in: fade-in 0.35s cubic-bezier(0.2, 0, 0, 1);
+  --animate-rise: rise 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ===================================================================
+   Keyframes
+   =================================================================== */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===================================================================
+   Base Styles
+   =================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ===================================================================
+   Ícones — Material Symbols (SVG individuais, ver components/ui/Icon.jsx)
+   =================================================================== */
+
+.icon {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+}
+.icon svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+/* ===================================================================
+   Scrollbar
+   =================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-on-surface-variant);
+}
+
+/* ===================================================================
+   Interactive Elements
+   =================================================================== */
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

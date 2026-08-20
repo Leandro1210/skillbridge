@@ -1,0 +1,13 @@
+# Normaliza quebra de linha para LF no repositório, independente do
+# sistema operacional de quem estiver editando (evita diffs enormes
+# só por causa de CRLF vs LF entre Windows e Mac/Linux).
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg text eol=lf
+*.woff binary
+*.woff2 binary
+*.ico binary
