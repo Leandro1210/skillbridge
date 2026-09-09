@@ -98,7 +98,11 @@ export default function Dashboard({ onContinueProject }) {
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <Badge tone="accent">Nível {user.nivel}</Badge>
               <Badge tone="neutral" className="font-mono">{user.xp_total} XP</Badge>
-              <Badge tone="success">{user.taxa_sucesso}% sucesso</Badge>
+              {/* O verde agora significa sucesso de verdade, então o tom
+                  precisa acompanhar o número — 0% num selo verde mentiria. */}
+              <Badge tone={user.taxa_sucesso >= 70 ? 'success' : user.taxa_sucesso >= 40 ? 'warning' : 'neutral'}>
+                {user.taxa_sucesso}% sucesso
+              </Badge>
             </div>
           </div>
         </div>
@@ -118,8 +122,14 @@ export default function Dashboard({ onContinueProject }) {
 
           <div className="relative h-3 overflow-hidden rounded-full bg-surface-container-highest">
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-primary"
-              style={{ width: `${xpPercent}%`, transition: 'width 1.2s cubic-bezier(0.2, 0, 0, 1)' }}
+              className="absolute inset-y-0 left-0 rounded-full"
+              style={{
+                width: `${xpPercent}%`,
+                // As duas cores da logo, na ordem em que aparecem na marca:
+                // a progressão é o único momento decorativo do sistema.
+                background: 'linear-gradient(90deg, var(--sb-logo-blue), var(--sb-logo-green))',
+                transition: 'width 1.2s cubic-bezier(0.2, 0, 0, 1)',
+              }}
             />
             <div
               className="absolute inset-y-0 left-0 rounded-full opacity-40"
@@ -169,11 +179,14 @@ export default function Dashboard({ onContinueProject }) {
             <Icon name="rocket_launch" size="1.5rem" />
           </div>
           <div>
-            <h2 className="mb-1.5 text-title-large text-on-surface">Conectando você ao mercado de trabalho</h2>
+            <h2 className="mb-1.5 text-title-large text-on-surface">Bem-vindo ao SkillBridge</h2>
             <p className="max-w-3xl text-body-medium leading-relaxed text-on-surface-variant">
-              Bem-vindo ao SkillBridge! Aqui você resolve <strong className="text-on-surface">desafios técnicos reais</strong> propostos
-              por empresas parceiras. Ao concluir suas etapas com sucesso, você ganha XP, avança de nível e{' '}
-              <strong className="text-on-surface">chama a atenção de recrutadores</strong>. Escolha um desafio abaixo para começar.
+              Comece pelo seu perfil. Preencha a instituição onde você estuda, as
+              tecnologias que já domina e o link do seu portfólio, onde ficam reunidos
+              seus trabalhos acadêmicos e projetos pessoais. Logo abaixo estão os desafios
+              publicados pelas empresas. Cada um mostra o nível mínimo necessário e os
+              critérios técnicos que serão avaliados. Toda etapa aprovada rende XP e
+              aproxima você do próximo nível, que libera desafios mais difíceis.
             </p>
           </div>
         </div>

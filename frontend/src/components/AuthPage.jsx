@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import api from '../api';
-import { setTokens } from '../auth';
+import { setTokens, clearTokens } from '../auth';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import Icon from './ui/Icon';
+import Logo from './ui/Logo';
 import { Input } from './ui/Input';
 
 /**
@@ -12,6 +12,14 @@ import { Input } from './ui/Input';
  * Props:
  *   onLogin (function) — callback chamado após login bem-sucedido.
  */
+/**
+ * Mensagem única para qualquer falha ao entrar. Diferenciar "senha
+ * errada" de "tipo de conta errado" contaria a quem tentasse adivinhar
+ * que aquele par e-mail/senha existe — e ainda revelaria o tipo da
+ * conta. As duas situações precisam ser indistinguíveis de fora.
+ */
+const ERRO_LOGIN = 'E-mail ou senha incorretos.';
+
 export default function AuthPage({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,6 +39,10 @@ export default function AuthPage({ onLogin }) {
     setError('');
     setLoading(true);
 
+    // Marca se a sessão chegou a ser gravada: se algo falhar depois
+    // disso, ela precisa ser desfeita para não sobrar sessão pela metade.
+    let sessaoGravada = false;
+
     try {
       if (isRegister) {
         await api.post('/auth/register/', {
@@ -47,8 +59,33 @@ export default function AuthPage({ onLogin }) {
 
       const { data } = await api.post('/auth/token/', { email, password });
       setTokens({ access: data.access, refresh: data.refresh });
+      sessaoGravada = true;
+
+      // O seletor Estudante/Empresa é uma decisão explícita do usuário,
+      // não enfeite: confere o tipo da conta antes de liberar a entrada.
+      // Sem esta checagem, uma conta de empresa entrando por "Sou
+      // Estudante" caía direto no painel da empresa, ignorando a escolha.
+      const { data: conta } = await api.get('/auth/me/');
+      const contaEhEmpresa = conta.empresa !== null && conta.empresa !== undefined;
+
+      if (contaEhEmpresa !== isCompany) {
+        clearTokens();
+        setError(ERRO_LOGIN);
+        return;
+      }
+
       onLogin();
     } catch (err) {
+      if (sessaoGravada) clearTokens();
+
+      // No login, qualquer falha vira a mesma mensagem (ver ERRO_LOGIN).
+      // No cadastro o detalhe é útil e não vaza nada: quem está criando
+      // a conta precisa saber qual campo recusou.
+      if (!isRegister) {
+        setError(ERRO_LOGIN);
+        return;
+      }
+
       const detail = err.response?.data;
       if (typeof detail === 'object' && detail !== null) {
         const firstKey = Object.keys(detail)[0];
@@ -63,16 +100,20 @@ export default function AuthPage({ onLogin }) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
+    // Véu suave com o azul da marca aplicado na própria superfície: dá
+    // profundidade ao branco sem virar decoração colorida.
+    <div
+      className="flex min-h-screen items-center justify-center px-4 py-10"
+      style={{
+        backgroundColor: 'var(--color-surface)',
+        backgroundImage:
+          'radial-gradient(ellipse 80% 60% at 50% -10%, var(--color-primary-container), transparent 65%)',
+      }}
+    >
       <Card padding="lg" className="w-full max-w-md animate-[var(--animate-fade-in)]">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary">
-            <Icon name="hub" size="1.75rem" />
-          </div>
-          <h1 className="text-headline-small text-on-surface">
-            Skill<span className="text-primary">Bridge</span>
-          </h1>
-          <p className="mt-1 text-body-medium text-on-surface-variant">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <Logo variant="lockup" height="2.5rem" className="mb-4" />
+          <p className="text-body-medium text-on-surface-variant">
             {isRegister ? 'Crie sua conta para começar' : 'Entre na sua conta'}
           </p>
         </div>
@@ -82,7 +123,7 @@ export default function AuthPage({ onLogin }) {
             type="button"
             onClick={() => setIsCompany(false)}
             className={`w-1/2 rounded-full py-2 text-label-large transition-all ${
-              !isCompany ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:text-on-surface'
+              !isCompany ? 'bg-primary text-on-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Sou Estudante
@@ -91,7 +132,7 @@ export default function AuthPage({ onLogin }) {
             type="button"
             onClick={() => setIsCompany(true)}
             className={`w-1/2 rounded-full py-2 text-label-large transition-all ${
-              isCompany ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:text-on-surface'
+              isCompany ? 'bg-primary text-on-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Sou Empresa

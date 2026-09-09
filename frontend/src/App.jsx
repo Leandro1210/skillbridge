@@ -13,6 +13,7 @@ import Shell from './components/Shell';
 import Button from './components/ui/Button';
 import Spinner from './components/ui/Spinner';
 import Icon from './components/ui/Icon';
+import Logo from './components/ui/Logo';
 import api from './api';
 import { isLoggedIn as hasStoredToken, getRefreshToken, clearTokens } from './auth';
 
@@ -95,6 +96,7 @@ export default function App() {
   if (profileError) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-surface px-4 text-center">
+        <Logo variant="mark" height="2.5rem" className="mb-1" />
         <p className="text-body-large text-on-surface-variant">Não foi possível carregar seu perfil.</p>
         <div className="flex gap-3">
           <Button variant="filled" onClick={retryLoadProfile}>Tentar novamente</Button>
@@ -107,9 +109,12 @@ export default function App() {
   // Se logado mas perfil ainda nao carregou, mostra loading
   if (!userProfile) {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-3 bg-surface">
-        <Spinner size="lg" />
-        <span className="text-body-large text-on-surface-variant">Carregando…</span>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-surface">
+        <Logo variant="lockup" height="2rem" />
+        <div className="flex items-center gap-3">
+          <Spinner size="md" />
+          <span className="text-body-large text-on-surface-variant">Carregando…</span>
+        </div>
       </div>
     );
   }

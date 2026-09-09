@@ -6,17 +6,20 @@ const PADDING = {
   lg: 'p-8',
 };
 
-/** M3 card types — https://m3.material.io/components/cards */
+/** M3 card types — https://m3.material.io/components/cards
+ *  No esquema claro o cartão elevado é branco puro sobre a página
+ *  levemente azulada: é o contraste de superfície que o destaca, com a
+ *  sombra como reforço. */
 const VARIANTS = {
-  elevated: 'bg-surface-container-low shadow-[var(--shadow-elevation-1)]',
-  filled: 'bg-surface-container-highest',
-  outlined: 'bg-surface border border-outline-variant',
+  elevated: 'bg-surface-container-lowest shadow-[var(--shadow-elevation-1)]',
+  filled: 'bg-surface-container',
+  outlined: 'bg-surface-container-lowest border border-outline-variant',
 };
 
 const HOVER = {
   elevated: 'hover:shadow-[var(--shadow-elevation-2)]',
-  filled: 'hover:bg-surface-container-highest/80',
-  outlined: 'hover:bg-surface-container-lowest',
+  filled: 'hover:bg-surface-container-high',
+  outlined: 'hover:border-outline hover:shadow-[var(--shadow-elevation-1)]',
 };
 
 export default function Card({

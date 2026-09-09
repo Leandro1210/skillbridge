@@ -8,8 +8,8 @@ import { ListItem } from './ui/ListItem';
 
 const STAT_TILES = [
   { key: 'total_desafios', label: 'Desafios', tone: 'text-primary', extra: (s) => `${s.desafios_ativos} ativos` },
-  { key: 'submissoes_pendentes', label: 'Pendentes', tone: 'text-tertiary' },
-  { key: 'submissoes_aprovadas', label: 'Aprovadas', tone: 'text-primary' },
+  { key: 'submissoes_pendentes', label: 'Pendentes', tone: 'text-warning' },
+  { key: 'submissoes_aprovadas', label: 'Aprovadas', tone: 'text-success' },
   { key: 'submissoes_reprovadas', label: 'Reprovadas', tone: 'text-error' },
   { key: 'total_submissoes', label: 'Total Submissões', tone: 'text-on-surface' },
   { key: 'estudantes_unicos', label: 'Estudantes', tone: 'text-secondary' },

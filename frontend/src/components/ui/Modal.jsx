@@ -20,11 +20,11 @@ export default function Modal({ open, onClose, title, children }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-scrim/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-scrim/40" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-lg rounded-[var(--radius-xl)] bg-surface-container-high p-6 shadow-[var(--shadow-elevation-3)] animate-[var(--animate-rise)]"
+        className="relative w-full max-w-lg rounded-[var(--radius-xl)] bg-surface-container-lowest p-6 shadow-[var(--shadow-elevation-3)] animate-[var(--animate-rise)]"
       >
         {title && (
           <div className="mb-5 flex items-center justify-between">

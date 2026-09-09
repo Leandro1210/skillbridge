@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Icon from './ui/Icon';
 import Button from './ui/Button';
+import Logo from './ui/Logo';
 
 /**
  * Chrome compartilhado do app. Quando `navItems` é passado (shell da
@@ -14,18 +15,14 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
   return (
     <div className="min-h-screen bg-surface">
       {/* Top bar — só a marca e as ações da conta, sem navegação de páginas */}
-      <header className="sticky top-0 z-40 border-b border-outline-variant bg-surface-container-low/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-outline-variant bg-surface-container-lowest/90 backdrop-blur-md">
         <div className={clsx('mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8', hasNav && 'lg:pl-28')}>
           <button
             onClick={onLogoClick}
-            className="flex items-center gap-2.5 rounded-full py-1 pr-3 transition-colors hover:bg-on-surface/5"
+            aria-label="Ir para o início"
+            className="flex items-center rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-on-surface/5"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-              <Icon name="hub" size="1.25rem" />
-            </span>
-            <span className="text-title-large text-on-surface">
-              Skill<span className="text-primary">Bridge</span>
-            </span>
+            <Logo variant="lockup" height="1.75rem" />
           </button>
 
           <div className="flex items-center gap-2">
@@ -40,7 +37,7 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
 
       {/* Navigation Rail — destinos fixos à esquerda, telas largas */}
       {hasNav && (
-        <nav className="fixed inset-y-0 left-0 z-30 hidden w-24 flex-col items-center gap-1 border-r border-outline-variant bg-surface-container-low pt-20 lg:flex">
+        <nav className="fixed inset-y-0 left-0 z-30 hidden w-24 flex-col items-center gap-1 border-r border-outline-variant bg-surface-container-lowest pt-20 lg:flex">
           {navItems.map((item) => {
             const active = activePage === item.page;
             return (
@@ -52,7 +49,7 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
                 <span
                   className={clsx(
                     'flex h-8 w-14 items-center justify-center rounded-full transition-colors',
-                    active ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-on-surface/5',
+                    active ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-on-surface/5',
                   )}
                 >
                   <Icon name={item.icon} size="1.35rem" />
@@ -68,7 +65,7 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
 
       {/* Navigation Bar — mesmos destinos, telas pequenas */}
       {hasNav && (
-        <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-outline-variant bg-surface-container-low lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-outline-variant bg-surface-container-lowest lg:hidden">
           {navItems.map((item) => {
             const active = activePage === item.page;
             return (
@@ -80,7 +77,7 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
                 <span
                   className={clsx(
                     'flex h-8 w-14 items-center justify-center rounded-full transition-colors',
-                    active ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant',
+                    active ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant',
                   )}
                 >
                   <Icon name={item.icon} size="1.35rem" />
@@ -96,10 +93,16 @@ export default function Shell({ navItems, rightSlot, activePage, onLogoClick, on
 
       <main className={clsx('pt-8', hasNav ? 'pb-24 lg:pb-16 lg:pl-24' : 'pb-16')}>{children}</main>
 
-      <footer className={clsx('border-t border-outline-variant py-8', hasNav && 'lg:pl-24')}>
-        <p className="text-center text-body-small text-on-surface-variant/70">
-          SkillBridge — Aprendizado prático conectado ao mercado
-        </p>
+      <footer className={clsx('border-t border-outline-variant py-6', hasNav && 'lg:pl-24')}>
+        <div className="flex flex-col items-center gap-1.5">
+          <Logo variant="mark" height="1.15rem" aria-hidden="true" />
+          {/* Azul escuro da marca — o mesmo do "Skill" na logo, para o
+              símbolo e o nome lerem como uma peça só. Discreto: é
+              assinatura de rodapé, não um segundo cabeçalho. */}
+          <p className="text-center text-label-small font-bold tracking-wide text-[var(--sb-logo-ink)]">
+            SkillBridge
+          </p>
+        </div>
       </footer>
     </div>
   );

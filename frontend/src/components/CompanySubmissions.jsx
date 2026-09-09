@@ -101,7 +101,7 @@ export default function CompanySubmissions() {
             onClick={() => setStatusFilter(f.value)}
             className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-label-large transition-colors ${
               statusFilter === f.value
-                ? 'bg-secondary-container text-on-secondary-container'
+                ? 'bg-primary-container text-on-primary-container'
                 : 'text-on-surface-variant hover:bg-on-surface/5'
             }`}
           >
@@ -202,8 +202,8 @@ export default function CompanySubmissions() {
               <p className="mb-3 text-label-large text-on-surface-variant">Status da avaliação</p>
               <div className="flex gap-3">
                 {[
-                  { value: 'aprovado', icon: 'thumb_up', tone: 'text-primary', activeBg: 'border-primary bg-primary-container/30' },
-                  { value: 'reprovado', icon: 'thumb_down', tone: 'text-error', activeBg: 'border-error bg-error-container/30' },
+                  { value: 'aprovado', icon: 'thumb_up', tone: 'text-success', activeBg: 'border-success bg-success-container/50' },
+                  { value: 'reprovado', icon: 'thumb_down', tone: 'text-error', activeBg: 'border-error bg-error-container/50' },
                 ].map((opt) => (
                   <label
                     key={opt.value}

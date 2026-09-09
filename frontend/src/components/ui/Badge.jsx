@@ -2,18 +2,23 @@ import clsx from 'clsx';
 
 /** M3 assist/filter chip-inspired status pill — mapeia para os papéis
  * de cor M3 (container tonal + on-container), não para uma paleta
- * decorativa à parte. */
+ * decorativa à parte.
+ *
+ * Antes `success` apontava para o primary (azul) e `warning` para o
+ * tertiary, porque o esquema escuro não tinha verde nem âmbar. Com as
+ * cores da logo o verde existe de verdade, então "Aprovado", "Ativo" e
+ * "Concluído" finalmente aparecem em verde. */
 const TONES = {
-  success: 'text-primary bg-primary-container/40',
-  warning: 'text-tertiary bg-tertiary-container/40',
-  error: 'text-error bg-error-container/40',
-  accent: 'text-tertiary bg-tertiary-container/40',
-  neutral: 'text-on-surface-variant bg-surface-container-highest',
+  success: 'text-on-success-container bg-success-container',
+  warning: 'text-on-warning-container bg-warning-container',
+  error: 'text-on-error-container bg-error-container',
+  accent: 'text-on-tertiary-container bg-tertiary-container',
+  neutral: 'text-on-surface-variant bg-surface-container-high',
 };
 
 const DOT = {
-  success: 'bg-primary',
-  warning: 'bg-tertiary',
+  success: 'bg-success',
+  warning: 'bg-warning',
   error: 'bg-error',
   accent: 'bg-tertiary',
   neutral: 'bg-outline',

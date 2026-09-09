@@ -229,7 +229,10 @@ export default function CompanyChallenges() {
                 </div>
               )}
 
-              <div className="mt-auto grid grid-cols-3 gap-2 border-t border-outline-variant pt-4">
+              {/* flex-wrap em vez de grid-cols-3 fixo: em telas estreitas
+                  "Desativar" não cabe em um terço da largura e empurrava o
+                  card — e com ele a página inteira — para fora da viewport. */}
+              <div className="mt-auto flex flex-wrap gap-2 border-t border-outline-variant pt-4">
                 {challenge.ativo ? (
                   <Button variant="outlined" size="sm" onClick={() => handleDeactivate(challenge.id)}>Desativar</Button>
                 ) : (

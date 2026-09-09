@@ -3,61 +3,85 @@
 /* ===================================================================
    SkillBridge — Design System
    Baseado no Material Design 3 (M3) — https://m3.material.io/
-   Esquema escuro, papéis de cor e escala tipográfica seguindo a
-   estrutura de tokens do M3 (primary/secondary/tertiary + neutros de
-   superfície em 5 níveis + papéis on-X e X-container).
+   Esquema claro derivado da logo da marca. Papéis de cor e escala
+   tipográfica seguem a estrutura de tokens do M3 (primary/secondary/
+   tertiary + neutros de superfície em 5 níveis + papéis on-X e
+   X-container).
    =================================================================== */
 
 @theme {
   /* -----------------------------------------------------------------
-     Cor — Primary (semente teal: crescimento/domínio de habilidade)
+     COR — esquema claro derivado da logo do SkillBridge.
+
+     Sementes extraídas do arquivo da marca:
+       azul  #0058f0   navy  #01183a   verde #02bc9a
+
+     Hierarquia pedida: o branco domina a interface, o azul da logo é o
+     acento que carrega as ações, e o azul escuro é a ênfase profunda.
+     As escalas tonais foram geradas em CIELCh a partir dessas sementes,
+     com correção de deriva de matiz nos tons claros (sem isso o azul
+     puxa para lilás) e todos os pares de contraste conferidos em WCAG AA.
      ----------------------------------------------------------------- */
-  --color-primary: #6fdbd1;
-  --color-on-primary: #003733;
-  --color-primary-container: #004f49;
-  --color-on-primary-container: #94f2e7;
-
-  /* Secondary — teal dessaturado, ações secundárias */
-  --color-secondary: #b2ccc7;
-  --color-on-secondary: #1d3531;
-  --color-secondary-container: #334b47;
-  --color-on-secondary-container: #cee9e3;
-
-  /* Tertiary — dourado, usado com moderação (XP, destaques, nível) */
-  --color-tertiary: #e8c177;
-  --color-on-tertiary: #402d00;
-  --color-tertiary-container: #5c4200;
-  --color-on-tertiary-container: #ffdea6;
-
-  /* Error */
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
-
-  /* Superfícies — neutros com leve viés teal, 5 níveis de elevação
-     tonal (M3 substitui sombra colorida por variação de tom) */
-  --color-surface-dim: #0f1513;
-  --color-surface: #0f1513;
-  --color-surface-bright: #353b39;
-  --color-surface-container-lowest: #0a0f0d;
-  --color-surface-container-low: #171d1b;
-  --color-surface-container: #1b211f;
-  --color-surface-container-high: #252b29;
-  --color-surface-container-highest: #303633;
-
-  --color-on-surface: #dee4e1;
-  --color-on-surface-variant: #bfc9c5;
-  --color-surface-variant: #3f4946;
-
-  --color-outline: #899390;
-  --color-outline-variant: #3f4946;
-
-  --color-inverse-surface: #dee4e1;
-  --color-inverse-on-surface: #2c3230;
-  --color-inverse-primary: #146b62;
-
-  --color-scrim: #000000;
+  /* Primary — o azul da logo (#0058f0). Carrega as ações principais:
+     botões preenchidos, FAB, estado ativo de navegação, links e foco. */
+  --color-primary                   : #0058f0;
+  --color-on-primary                : #ffffff;
+  --color-primary-container         : #dce9ff;
+  --color-on-primary-container      : #00245f;
+  /* Secondary — apoio. Usado pelo botão tonal (ênfase média: existe
+     para ações como "Publicar", que importam mas não são a ação
+     principal da tela). Um pouco mais saturado que o primary-container
+     para não ler como desabilitado, e bem mais claro que o primary. */
+  --color-secondary                 : #565e71;
+  --color-on-secondary              : #ffffff;
+  --color-secondary-container       : #cadaff;
+  --color-on-secondary-container    : #24304d;
+  /* Tertiary — o azul escuro da logo (#01183a). Ênfase profunda:
+     números de nível, destaques de XP e superfícies invertidas. */
+  --color-tertiary                  : #003d79;
+  --color-on-tertiary               : #ffffff;
+  --color-tertiary-container        : #d9e6ff;
+  --color-on-tertiary-container     : #001f45;
+  /* Success — o verde da logo (#02bc9a). Semântico: entrega aprovada,
+     desafio ativo, projeto concluído. */
+  --color-success                   : #006653;
+  --color-on-success                : #ffffff;
+  --color-success-container         : #b3efd8;
+  --color-on-success-container      : #002a20;
+  /* Warning — âmbar contido. Semântico: aguardando avaliação,
+     dificuldade média. Fora da paleta da marca por ser sinal universal. */
+  --color-warning                   : #8b5800;
+  --color-on-warning                : #ffffff;
+  --color-warning-container         : #ffddb2;
+  --color-on-warning-container      : #341f00;
+  /* Error — vermelho. Semântico: entrega reprovada, falha, ação destrutiva. */
+  --color-error                     : #d10031;
+  --color-on-error                  : #ffffff;
+  --color-error-container           : #ffe2de;
+  --color-on-error-container        : #50000c;
+  /* Superfícies — o branco domina. O cartão é branco puro sobre uma
+     página levemente azulada; os 5 níveis de container do M3 sobem em
+     tom (não em sombra) para indicar elevação. */
+  --color-surface                   : #fafcff;
+  --color-surface-dim               : #e0e3e8;
+  --color-surface-bright            : #ffffff;
+  --color-surface-container-lowest  : #ffffff;
+  --color-surface-container-low     : #f6f9ff;
+  --color-surface-container         : #f1f4f9;
+  --color-surface-container-high    : #ebeef3;
+  --color-surface-container-highest : #e5e8ee;
+  /* Conteúdo sobre superfície — a tinta é azul-escura, não cinza. */
+  --color-on-surface                : #1d253b;
+  --color-on-surface-variant        : #545968;
+  --color-surface-variant           : #dfe9f9;
+  /* Contornos */
+  --color-outline                   : #767c8b;
+  --color-outline-variant           : #ccd5e5;
+  /* Inversos e véu */
+  --color-inverse-surface           : #002754;
+  --color-inverse-on-surface        : #f1f4f9;
+  --color-inverse-primary           : #b0cdff;
+  --color-scrim                     : #001737;
 
   /* -----------------------------------------------------------------
      Forma — escala M3 (none/xs/sm/md/lg/xl/full)
@@ -71,12 +95,14 @@
   --radius-full: 9999px;
 
   /* -----------------------------------------------------------------
-     Elevação — sombras neutras e discretas (M3 dark usa tom de
-     superfície como sinal primário; a sombra é só um reforço leve)
+     Elevação — no esquema claro a sombra volta a ser o sinal principal
+     de elevação (no escuro era o tom da superfície). Tingida com o
+     azul-escuro da marca em opacidade baixa: sombra preta pura sobre
+     branco lê como sujeira cinza
      ----------------------------------------------------------------- */
-  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
-  --shadow-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
-  --shadow-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-elevation-1: 0 1px 2px rgba(13, 26, 56, 0.08), 0 2px 6px rgba(13, 26, 56, 0.06);
+  --shadow-elevation-2: 0 2px 4px rgba(13, 26, 56, 0.08), 0 6px 14px rgba(13, 26, 56, 0.09);
+  --shadow-elevation-3: 0 6px 12px rgba(13, 26, 56, 0.10), 0 14px 32px rgba(13, 26, 56, 0.12);
 
   /* -----------------------------------------------------------------
      Tipografia — Roboto, escala M3 (papéis usados nesta app)
@@ -176,6 +202,36 @@
 }
 
 /* ===================================================================
+   Marca — cores da logo, expostas para que os SVGs inline possam ser
+   recolorizados por contexto (ex.: sobre superfície escura o "Skill"
+   precisa virar branco, senão some no fundo).
+   =================================================================== */
+
+:root {
+  --sb-logo-blue: #0058f0;
+  --sb-logo-green: #02bc9a;
+  --sb-logo-ink: #01183a;
+}
+
+/* Variante para superfícies escuras */
+.logo-on-dark {
+  --sb-logo-ink: #ffffff;
+  --sb-logo-blue: #7ba9ff;
+}
+
+/* O wrapper define a altura; o SVG acompanha e a largura sai da
+   proporção do viewBox. */
+.sb-logo {
+  display: inline-block;
+  flex-shrink: 0;
+}
+.sb-logo svg {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+/* ===================================================================
    Base Styles
    =================================================================== */
 
@@ -196,12 +252,19 @@ body {
 }
 
 h1, h2, h3, h4 {
-  font-weight: 400;
+  /* No fundo claro o peso 400 do M3 lê fraco demais nos títulos
+     grandes; 500 recupera a hierarquia sem virar negrito. */
+  font-weight: 500;
   text-wrap: balance;
 }
 
 #root {
   min-height: 100vh;
+}
+
+::selection {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
 }
 
 /* ===================================================================
@@ -225,16 +288,16 @@ h1, h2, h3, h4 {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-outline);
+  background: var(--color-outline-variant);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-on-surface-variant);
+  background: var(--color-outline);
 }
 
 /* ===================================================================
@@ -251,7 +314,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid var(--color-secondary);
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
 

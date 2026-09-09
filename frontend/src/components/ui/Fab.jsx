@@ -11,8 +11,10 @@ export default function Fab({ onClick, icon = 'add', label, className, ...rest }
     <button
       onClick={onClick}
       className={clsx(
-        'fixed z-30 flex items-center gap-3 rounded-[var(--radius-lg)] bg-primary-container',
-        'px-5 py-4 text-on-primary-container shadow-[var(--shadow-elevation-3)]',
+        // Sobre página branca o container tonal (azul bem claro) não
+        // sinaliza "ação principal"; o primary sólido resolve.
+        'fixed z-30 flex items-center gap-3 rounded-[var(--radius-lg)] bg-primary',
+        'px-5 py-4 text-on-primary shadow-[var(--shadow-elevation-3)]',
         'transition-transform duration-200 hover:scale-105 active:scale-95',
         className,
       )}

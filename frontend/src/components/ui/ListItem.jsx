@@ -28,7 +28,7 @@ export function ListItem({ leading, title, subtitle, trailing, children, classNa
 /** Contêiner com bordas arredondadas para agrupar ListItems. */
 export function List({ children, className }) {
   return (
-    <div className={clsx('rounded-[var(--radius-lg)] border border-outline-variant bg-surface-container-low px-5', className)}>
+    <div className={clsx('rounded-[var(--radius-lg)] border border-outline-variant bg-surface-container-lowest px-5', className)}>
       {children}
     </div>
   );
