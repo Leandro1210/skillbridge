@@ -15,7 +15,7 @@ export default function StudentProfileView() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadStudentProfile();
+    void loadStudentProfile();
   }, []);
 
   const loadStudentProfile = async () => {
@@ -35,7 +35,8 @@ export default function StudentProfileView() {
 
   const getTecnologiasList = () => {
     if (!profile?.tecnologias) return [];
-    return profile.tecnologias.split(',').map((t) => t.trim()).filter(Boolean);
+    const techs = profile.tecnologias.split(',').map((t) => t.trim()).filter(Boolean);
+    return [...new Set(techs)];
   };
 
   if (loading) {
@@ -117,8 +118,8 @@ export default function StudentProfileView() {
               <Icon name="code_blocks" size="0.95rem" /> Tecnologias
             </p>
             <div className="flex flex-wrap gap-2">
-              {getTecnologiasList().map((tech, idx) => (
-                <Badge key={idx} tone="neutral">{tech}</Badge>
+              {getTecnologiasList().map((tech) => (
+                <Badge key={tech} tone="neutral">{tech}</Badge>
               ))}
             </div>
           </Card>

@@ -60,7 +60,7 @@ export default function ProjectWorkspace({ projectId, onBack }) {
 
   useEffect(() => {
     if (projectId) {
-      fetchData();
+      void fetchData();
     }
   }, [projectId, fetchData]);
 
@@ -131,9 +131,9 @@ export default function ProjectWorkspace({ projectId, onBack }) {
               Ferramentas / tecnologias recomendadas
             </h4>
             <div className="flex flex-wrap gap-2">
-              {projeto.ferramentas.split(',').map((f, i) => (
-                <span key={i} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-1 text-body-small text-on-surface">
-                  {f.trim()}
+              {[...new Set(projeto.ferramentas.split(',').map((f) => f.trim()).filter(Boolean))].map((f) => (
+                <span key={f} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-1 text-body-small text-on-surface">
+                  {f}
                 </span>
               ))}
             </div>
@@ -158,28 +158,34 @@ export default function ProjectWorkspace({ projectId, onBack }) {
               else if (isEtapaAprovado) bulletClass = 'bg-primary text-on-primary';
               else if (isEtapaPendente) bulletClass = 'bg-tertiary text-on-tertiary';
 
+              let bulletContent = idx + 1;
+              let statusLabel = 'Bloqueada';
+              if (isEtapaAprovado) {
+                bulletContent = <Icon name="check" size="1.1rem" />;
+                statusLabel = 'Concluída';
+              } else if (isEtapaPendente) {
+                bulletContent = <Spinner size="sm" className="text-on-tertiary" />;
+                statusLabel = 'Em validação...';
+              }
+
               return (
-                <div
+                <button
+                  type="button"
                   key={etapa.id}
+                  aria-current={isCurrent ? 'step' : undefined}
                   className={`relative flex cursor-pointer items-center gap-4 transition-all ${isCurrent ? 'scale-105 opacity-100' : 'opacity-70 hover:opacity-100'}`}
                   onClick={() => setActiveEtapaId(etapa.id)}
                 >
                   <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-label-large font-bold transition-all ${bulletClass}`}>
-                    {isEtapaAprovado ? (
-                      <Icon name="check" size="1.1rem" />
-                    ) : isEtapaPendente ? (
-                      <Spinner size="sm" className="text-on-tertiary" />
-                    ) : (
-                      idx + 1
-                    )}
+                    {bulletContent}
                   </div>
                   <div>
                     <p className={`font-medium ${isCurrent ? 'text-primary' : 'text-on-surface'}`}>Etapa {etapa.ordem}</p>
                     <p className="max-w-[150px] truncate text-body-small text-on-surface-variant/70">
-                      {isEtapaAprovado ? 'Concluída' : isEtapaPendente ? 'Em validação...' : 'Bloqueada'}
+                      {statusLabel}
                     </p>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>

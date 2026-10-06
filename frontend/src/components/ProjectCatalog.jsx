@@ -36,7 +36,7 @@ export default function ProjectCatalog({ onProjectStarted }) {
         setLoading(false);
       }
     };
-    fetchData();
+    void fetchData();
   }, []);
 
   const handleStartProject = async () => {

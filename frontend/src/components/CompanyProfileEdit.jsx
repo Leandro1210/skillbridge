@@ -24,7 +24,7 @@ export default function CompanyProfileEdit({ onBack }) {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    loadProfile();
+    void loadProfile();
   }, []);
 
   const loadProfile = async () => {

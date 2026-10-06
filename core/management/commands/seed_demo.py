@@ -25,7 +25,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Criando dados de demonstracao...\n')
 
-        # usuário de demonstração
+        user = self._criar_usuario_demo()
+        self._criar_projetos()
+        habilidades = self._criar_habilidades(user)
+        self._criar_empresas_e_vagas(habilidades)
+        self._imprimir_credenciais(user)
+
+    def _criar_usuario_demo(self):
         user, created = Usuario.objects.get_or_create(
             email='demo@skillbridge.com',
             defaults={
@@ -42,8 +48,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('[OK] Usuario demo criado'))
         else:
             self.stdout.write('  Usuario demo ja existe')
+        return user
 
-        # projetos de exemplo
+    def _criar_projetos(self):
         projetos_data = [
             {
                 'titulo': 'API REST com Django',
@@ -111,7 +118,8 @@ class Command(BaseCommand):
                     )
                 self.stdout.write(self.style.SUCCESS(f'[OK] Projeto: {projeto.titulo}'))
 
-        # catálogo de habilidades
+    def _criar_habilidades(self, user):
+        """Cria o catálogo de habilidades e as do usuário demo; devolve {nome: Habilidade}."""
         habilidades_data = [
             ('Python', 'hard'), ('JavaScript', 'hard'), ('React', 'hard'),
             ('Django', 'hard'), ('Docker', 'hard'), ('SQL', 'hard'),
@@ -137,8 +145,9 @@ class Command(BaseCommand):
                 defaults={'nivel': nivel},
             )
         self.stdout.write(self.style.SUCCESS('[OK] Habilidades do usuario configuradas'))
+        return habilidades
 
-        # empresas e vagas de exemplo
+    def _criar_empresas_e_vagas(self, habilidades):
         empresas_vagas = [
             {
                 'empresa': {'nome': 'TechBR', 'setor': 'Tecnologia', 'descricao': 'Startup brasileira de SaaS'},
@@ -196,6 +205,7 @@ class Command(BaseCommand):
                         )
                     self.stdout.write(self.style.SUCCESS(f'[OK] Vaga: {vaga.titulo}'))
 
+    def _imprimir_credenciais(self, user):
         # já gera um token pronto pra colar no console e testar sem precisar logar
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
@@ -203,11 +213,11 @@ class Command(BaseCommand):
         self.stdout.write('\n' + '=' * 60)
         self.stdout.write(self.style.SUCCESS('DADOS DE DEMONSTRACAO CRIADOS COM SUCESSO!'))
         self.stdout.write('=' * 60)
-        self.stdout.write(f'\n  Email: demo@skillbridge.com')
-        self.stdout.write(f'  Senha: demo1234')
-        self.stdout.write(f'\n  Access Token (copie para o localStorage):')
+        self.stdout.write('\n  Email: demo@skillbridge.com')
+        self.stdout.write('  Senha: demo1234')
+        self.stdout.write('\n  Access Token (copie para o localStorage):')
         self.stdout.write(self.style.WARNING(f'  {str(refresh.access_token)}'))
-        self.stdout.write(f'\n  Refresh Token:')
+        self.stdout.write('\n  Refresh Token:')
         self.stdout.write(self.style.WARNING(f'  {str(refresh)}'))
         self.stdout.write('\n' + '=' * 60)
         self.stdout.write('  Para usar no frontend, abra o console do navegador (F12) e cole:')

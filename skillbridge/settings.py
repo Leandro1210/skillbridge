@@ -22,9 +22,10 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     if DEBUG:
-        # Só serve para rodar localmente sem configurar nada. Nunca é usada em produção
-        # porque DEBUG=False (o padrão) exige DJANGO_SECRET_KEY definida abaixo.
-        SECRET_KEY = 'django-insecure-local-dev-only-not-for-production'
+        # Só para rodar localmente sem configurar nada: gera uma chave aleatória a cada
+        # inicialização. Produção (DEBUG=False, o padrão) exige DJANGO_SECRET_KEY.
+        from django.core.management.utils import get_random_secret_key
+        SECRET_KEY = get_random_secret_key()
     else:
         raise ImproperlyConfigured(
             'DJANGO_SECRET_KEY não foi definida. Gere uma com '

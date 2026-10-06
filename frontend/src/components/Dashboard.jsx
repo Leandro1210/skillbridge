@@ -29,7 +29,7 @@ export default function Dashboard({ onContinueProject }) {
         setLoading(false);
       }
     };
-    fetchData();
+    void fetchData();
   }, []);
 
   // Anima a barra de XP apos carregar
@@ -71,6 +71,12 @@ export default function Dashboard({ onContinueProject }) {
   const concluidos = inscricoes.filter((i) => i.status === 'concluido').length;
   const emAndamento = inscricoes.length - concluidos;
 
+  // O verde agora significa sucesso de verdade, então o tom
+  // precisa acompanhar o número — 0% num selo verde mentiria.
+  let successTone = 'neutral';
+  if (user.taxa_sucesso >= 70) successTone = 'success';
+  else if (user.taxa_sucesso >= 40) successTone = 'warning';
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
 
@@ -98,9 +104,7 @@ export default function Dashboard({ onContinueProject }) {
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <Badge tone="accent">Nível {user.nivel}</Badge>
               <Badge tone="neutral" className="font-mono">{user.xp_total} XP</Badge>
-              {/* O verde agora significa sucesso de verdade, então o tom
-                  precisa acompanhar o número — 0% num selo verde mentiria. */}
-              <Badge tone={user.taxa_sucesso >= 70 ? 'success' : user.taxa_sucesso >= 40 ? 'warning' : 'neutral'}>
+              <Badge tone={successTone}>
                 {user.taxa_sucesso}% sucesso
               </Badge>
             </div>

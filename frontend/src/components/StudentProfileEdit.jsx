@@ -25,7 +25,7 @@ export default function StudentProfileEdit({ onBack }) {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    loadProfile();
+    void loadProfile();
   }, []);
 
   const loadProfile = async () => {

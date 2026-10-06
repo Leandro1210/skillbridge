@@ -39,7 +39,7 @@ export default function App() {
     if (!isLoggedIn) return;
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
         const { data } = await api.get('/auth/me/');
         if (cancelled) return;
@@ -142,6 +142,30 @@ export default function App() {
   }
 
   // Shell do estudante
+  let studentContent;
+
+  if (currentPage === 'student-perfil') {
+    studentContent = <StudentProfileEdit onBack={() => setCurrentPage('dashboard')} />;
+  } else if (activeProjectId) {
+    studentContent = (
+      <ProjectWorkspace
+        projectId={activeProjectId}
+        onBack={() => {
+          setActiveProjectId(null);
+          setRefreshKey((prev) => prev + 1);
+        }}
+      />
+    );
+  } else {
+    studentContent = (
+      <>
+        <Dashboard key={refreshKey} onContinueProject={(id) => setActiveProjectId(id)} />
+        <div className="mx-auto my-12 h-px max-w-7xl bg-outline-variant" />
+        <ProjectCatalog onProjectStarted={() => setRefreshKey((prev) => prev + 1)} />
+      </>
+    );
+  }
+
   return (
     <Shell
       rightSlot={
@@ -161,23 +185,7 @@ export default function App() {
       }}
       onLogout={handleLogoutClick}
     >
-      {currentPage === 'student-perfil' ? (
-        <StudentProfileEdit onBack={() => setCurrentPage('dashboard')} />
-      ) : activeProjectId ? (
-        <ProjectWorkspace
-          projectId={activeProjectId}
-          onBack={() => {
-            setActiveProjectId(null);
-            setRefreshKey((prev) => prev + 1);
-          }}
-        />
-      ) : (
-        <>
-          <Dashboard key={refreshKey} onContinueProject={(id) => setActiveProjectId(id)} />
-          <div className="mx-auto my-12 h-px max-w-7xl bg-outline-variant" />
-          <ProjectCatalog onProjectStarted={() => setRefreshKey((prev) => prev + 1)} />
-        </>
-      )}
+      {studentContent}
     </Shell>
   );
 }

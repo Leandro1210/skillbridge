@@ -19,7 +19,7 @@ export default function CompanyProfileView({ onNavigate }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadCompanyProfile();
+    void loadCompanyProfile();
   }, []);
 
   const loadCompanyProfile = async () => {
@@ -40,7 +40,8 @@ export default function CompanyProfileView({ onNavigate }) {
 
   const getTecnologiasList = () => {
     if (!profile?.tecnologias) return [];
-    return profile.tecnologias.split(',').map((t) => t.trim()).filter(Boolean);
+    const techs = profile.tecnologias.split(',').map((t) => t.trim()).filter(Boolean);
+    return [...new Set(techs)];
   };
 
   if (loading) {
@@ -136,8 +137,10 @@ export default function CompanyProfileView({ onNavigate }) {
         <Card padding="lg" className="mb-6">
           <p className="mb-3 text-body-small font-semibold uppercase tracking-wide text-on-surface-variant/70">Stack Tecnológico</p>
           <div className="flex flex-wrap gap-2">
-            {getTecnologiasList().map((tech, idx) => (
-              <Badge key={idx} tone="neutral">{tech}</Badge>
+            {getTecnologiasList().map((tech) => (
+              <Badge key={tech} tone="neutral">
+                {tech}
+              </Badge>
             ))}
           </div>
         </Card>

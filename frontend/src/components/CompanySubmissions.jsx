@@ -51,7 +51,7 @@ export default function CompanySubmissions() {
   }, [statusFilter]);
 
   useEffect(() => {
-    loadSubmissions();
+    void loadSubmissions();
   }, [loadSubmissions]);
 
   const handleEvaluate = async () => {
@@ -63,7 +63,7 @@ export default function CompanySubmissions() {
       });
       setSelectedSubmission(null);
       setFeedback('');
-      loadSubmissions();
+      void loadSubmissions();
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.detail ?? 'Erro ao avaliar submissão');

@@ -99,6 +99,9 @@ export default function AuthPage({ onLogin }) {
     }
   };
 
+  let submitLabel = isRegister ? 'Criar conta' : 'Entrar';
+  if (loading) submitLabel = 'Carregando...';
+
   return (
     // Véu suave com o azul da marca aplicado na própria superfície: dá
     // profundidade ao branco sem virar decoração colorida.
@@ -222,7 +225,7 @@ export default function AuthPage({ onLogin }) {
           )}
 
           <Button type="submit" variant="filled" disabled={loading} className="w-full">
-            {loading ? 'Carregando...' : isRegister ? 'Criar conta' : 'Entrar'}
+            {submitLabel}
           </Button>
         </form>
 

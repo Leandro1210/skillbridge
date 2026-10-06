@@ -46,7 +46,7 @@ export default function CompanyDashboard({ onNavigate }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadStats();
+    void loadStats();
   }, []);
 
   const loadStats = async () => {

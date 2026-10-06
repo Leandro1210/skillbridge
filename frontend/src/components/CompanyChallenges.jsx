@@ -30,7 +30,7 @@ export default function CompanyChallenges() {
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   useEffect(() => {
-    loadChallenges();
+    void loadChallenges();
   }, []);
 
   const loadChallenges = async () => {
@@ -56,7 +56,7 @@ export default function CompanyChallenges() {
         await api.post('/empresa/projetos/', formData);
       }
       resetForm();
-      loadChallenges();
+      void loadChallenges();
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.detail ?? 'Erro ao salvar desafio');
@@ -72,7 +72,7 @@ export default function CompanyChallenges() {
   const handlePublish = async (id) => {
     try {
       await api.post(`/empresa/projetos/${id}/publicar/`);
-      loadChallenges();
+      void loadChallenges();
     } catch (err) {
       console.error(err);
       setError('Erro ao publicar desafio');
@@ -82,7 +82,7 @@ export default function CompanyChallenges() {
   const handleDeactivate = async (id) => {
     try {
       await api.post(`/empresa/projetos/${id}/desativar/`);
-      loadChallenges();
+      void loadChallenges();
     } catch (err) {
       console.error(err);
       setError('Erro ao desativar desafio');
@@ -93,7 +93,7 @@ export default function CompanyChallenges() {
     if (window.confirm('Tem certeza que deseja deletar este desafio?')) {
       try {
         await api.delete(`/empresa/projetos/${id}/`);
-        loadChallenges();
+        void loadChallenges();
       } catch (err) {
         console.error(err);
         setError('Erro ao deletar desafio');
@@ -180,7 +180,7 @@ export default function CompanyChallenges() {
                 min="1"
                 label="Nível Mínimo Exigido (Estudante)"
                 value={formData.nivel_minimo}
-                onChange={(e) => setFormData({ ...formData, nivel_minimo: parseInt(e.target.value) || 1 })}
+                onChange={(e) => setFormData({ ...formData, nivel_minimo: Number.parseInt(e.target.value) || 1 })}
               />
             </div>
 
@@ -221,9 +221,9 @@ export default function CompanyChallenges() {
 
               {challenge.ferramentas && (
                 <div className="mb-5 flex flex-wrap gap-1.5">
-                  {challenge.ferramentas.split(',').map((ferramenta, i) => (
-                    <span key={i} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-0.5 text-body-small text-on-surface-variant">
-                      {ferramenta.trim()}
+                  {[...new Set(challenge.ferramentas.split(',').map((f) => f.trim()).filter(Boolean))].map((ferramenta) => (
+                    <span key={ferramenta} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-0.5 text-body-small text-on-surface-variant">
+                      {ferramenta}
                     </span>
                   ))}
                 </div>
