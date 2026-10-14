@@ -33,3 +33,9 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Testes / cobertura
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
