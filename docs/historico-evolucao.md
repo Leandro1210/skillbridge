@@ -47,3 +47,9 @@ Todas as mudanças foram verificadas com `manage.py check`, `npm run lint` e `np
 ## O que ainda não existe
 
 Para não deixar dúvida sobre o estado atual do projeto: não há testes automatizados (nem backend, nem frontend), não há validação automática de código nas entregas (a avaliação é sempre manual pela empresa), não há notificações, e o sistema de recomendação de vagas por habilidade está implementado mas sem dado real para funcionar. A análise estática com SonarQube ainda é só local, pela extensão no editor: falta integrar o SonarQube Cloud ao CI (GitHub Actions), com quality gate nos Pull Requests. Essas lacunas estão detalhadas em [`documentacao-tecnica.md`](documentacao-tecnica.md#possíveis-evoluções-futuras).
+
+
+Seguranca
+Complexidade
+Declaracao implicita
+Usabilidade para pc e mobile

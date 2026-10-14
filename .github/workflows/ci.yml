@@ -19,7 +19,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Django system check
         env:
@@ -27,6 +27,16 @@ jobs:
           DJANGO_DEBUG: "False"
           DATABASE_URL: sqlite:///ci.sqlite3
         run: python manage.py check
+      
+      - name: Testes + cobertura
+        run: pytest
+      
+      - name: Guardar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: coverage.xml
+        
 
   frontend:
     name: Frontend (React)
@@ -52,3 +62,23 @@ jobs:
 
       - name: Build
         run: npm run build
+  
+  sonar:
+    name: SonarQube Cloud
+    needs: backend
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Baixar relatório de cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-backend
+
+      - name: SonarQube Scan
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v8.3.0

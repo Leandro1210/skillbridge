@@ -1,0 +1,12 @@
+[run]
+source = .
+relative_files = True
+omit =
+    venv/*
+    frontend/*
+    manage.py
+    */migrations/*
+    core/tests/*
+    skillbridge/settings_test.py
+    skillbridge/asgi.py
+    skillbridge/wsgi.py
