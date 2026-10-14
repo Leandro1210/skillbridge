@@ -30,7 +30,9 @@ Frontend (React + Vite)  →  API REST (Django + DRF)  →  PostgreSQL (Supabase
 | Ícones | Material Symbols (SVGs individuais, não a fonte completa — ver `frontend/src/lib/icons.js`) |
 | Banco de dados | PostgreSQL (Supabase) |
 | Hospedagem | Render (backend) + Vercel (frontend) |
-| CI | GitHub Actions (`manage.py check`, `npm run lint`, `npm run build`) |
+| Testes | pytest + pytest-django + pytest-cov (backend) |
+| CI | GitHub Actions (`manage.py check`, `pytest`, `npm run lint`, `npm run build`) |
+| Qualidade | SonarQube Cloud (no CI) + SonarQube for IDE (no editor) |
 
 ## Modelo de dados
 
@@ -119,12 +121,61 @@ Lista completa em [`.env.example`](../.env.example) na raiz. Resumo:
 | `VITE_API_URL` | Frontend | URL base da API |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` | Frontend | Credenciais públicas da Supabase (anon key) |
 
+## Testes automatizados
+
+O backend tem testes com **pytest** (via `pytest-django`), em `core/tests/`. O frontend ainda não tem testes.
+
+### Configuração
+
+| Arquivo | Papel |
+|---|---|
+| `pytest.ini` | Aponta para `skillbridge.settings_test`, define `core/tests` como pasta de testes e liga a cobertura (`--cov`), com saída no terminal e em `coverage.xml` |
+| `skillbridge/settings_test.py` | Importa os settings normais e troca o banco por **SQLite em memória**. Também força `DJANGO_DEBUG=True`: sem isso, o `SECURE_SSL_REDIRECT` de produção faria toda requisição de teste receber 301. Os testes nunca acessam o banco do Supabase. |
+| `.coveragerc` | Mede a cobertura a partir da raiz, com `relative_files = True`, para os caminhos saírem como `core/views.py`, o formato que o SonarQube precisa. Ignora migrations, os próprios testes, `asgi`/`wsgi` e `settings_test` |
+| `requirements-dev.txt` | `requirements.txt` + `pytest`, `pytest-django`, `pytest-cov` |
+| `core/tests/conftest.py` | Fixtures compartilhadas: `api_client`, `estudante`, `empresa`, `usuario_empresa`, `projeto` (com 1 etapa) e `inscrito` |
+
+Os testes de API usam o `APIClient` do DRF com `force_authenticate`, que autentica sem precisar gerar JWT. O padrão de cada teste é preparar os dados, chamar o endpoint e conferir **o status HTTP e o estado do banco depois**: por exemplo, que uma reavaliação recusada não concedeu XP de novo.
+
+### O que já está coberto
+
+| Arquivo | Cobre |
+|---|---|
+| `test_models.py` | XP por dificuldade, recálculo de nível (a cada 1000 XP), taxa de sucesso ignorando entregas pendentes |
+| `test_auth.py` | Registro de aluno e de empresa, senha criptografada e nunca devolvida na resposta, senhas diferentes, senha fraca, e-mail duplicado, campos obrigatórios de empresa, logout (incluindo que o refresh token deixa de funcionar depois dele) |
+| `test_entregas.py` | Envio de entrega: aluno não inscrito, etapa inexistente, projeto inativo, etapa já aprovada, URL inválida, caminho feliz (fica `pendente`) |
+| `test_empresa.py` | Avaliação: aprovação concede XP e sobe nível, reprovação com feedback, outra empresa não pode avaliar, entrega aprovada não pode ser reavaliada, status inválido, estudante não acessa rota de empresa. Dashboard com as contagens |
+
+Na última medição eram **32 testes**, com cobertura de 100% em `serializers.py`, 93% em `models.py` e 68% em `views.py`.
+
+**Ainda sem teste** (próximos a escrever): `POST projetos/{id}/iniciar/` (nível mínimo, inscrição duplicada); filtros do catálogo (`ativo`, `?disponiveis=true`); vagas recomendadas; criação, edição, publicação e desativação de desafios pela empresa (incluindo bloqueio entre empresas); filtro de `empresa/submissoes/`; perfis (`auth/me`, `perfil/usuario`, `perfil/empresa`); isolamento das listas de entregas e inscrições por usuário.
+
+## Integração contínua e análise de qualidade
+
+O workflow `.github/workflows/ci.yml` roda a cada push na `main` e em todo Pull Request para a `main`:
+
+| Job | Etapas |
+|---|---|
+| `Backend (Django)` | Python 3.12 → `pip install -r requirements-dev.txt` → `manage.py check` → `pytest` → publica o `coverage.xml` como artefato |
+| `Frontend (React)` | Node 20 → `npm ci` → `npm run lint` → `npm run build` |
+| `SonarQube Cloud` | Roda depois do backend (`needs: backend`). Baixa o `coverage.xml` e executa o scanner (`SonarSource/sonarqube-scan-action`) com o secret `SONAR_TOKEN`. Se o secret não estiver disponível (por exemplo, em PR vindo de fork), o passo é pulado em vez de quebrar o CI |
+
+A configuração da análise fica em `sonar-project.properties`:
+- **Projeto**: organização `leandro1210`, chave `Leandro1210_skillbridge`.
+- **Código analisado**: `core`, `skillbridge` e `frontend/src`, com os testes declarados à parte (`sonar.tests=core/tests`). Migrations e assets ficam fora.
+- **Cobertura**: lida de `coverage.xml`. O frontend fica fora da métrica de cobertura até ganhar testes, assim como arquivos de configuração (`settings*`, `asgi`, `wsgi`, `supabase_config`) e o comando `seed_demo`.
+- **Falso positivo ignorado**: a regra `css:S4662` em `frontend/src/index.css`, porque `@theme` é diretiva do Tailwind CSS 4.
+
+O "Automatic Analysis" do SonarQube Cloud precisa ficar **desligado**, porque a análise é feita pelo CI. No editor, a extensão SonarQube for IDE pode ser conectada ao mesmo projeto (Connected Mode) para usar as mesmas regras e os mesmos alertas já revisados.
+
 ## Possíveis evoluções futuras
 
 Ideias que ainda não foram implementadas, mantidas aqui como registro — não são compromissos de entrega:
 
 - Popular `HabilidadeUsuario` de fato, pra deixar a recomendação de vagas funcional.
-- Testes automatizados (não existe nenhum hoje, nem backend nem frontend).
+- Completar os testes do backend (lista em [Testes automatizados](#testes-automatizados)) e criar os do frontend (Vitest + Testing Library), incluindo a cobertura do frontend no SonarQube.
+- Proteger a branch `main` (ruleset do GitHub) exigindo CI verde e quality gate aprovado para fazer merge.
+- Remover ou passar a usar `skillbridge/supabase_config.py`, que hoje não é importado em lugar nenhum.
 - Notificação ao aluno quando uma entrega é avaliada (hoje ele só descobre ao abrir o app de novo).
 - Upload de avatar.
 - Adoção de um roteador real no frontend (`react-router-dom` está instalado mas não é usado).

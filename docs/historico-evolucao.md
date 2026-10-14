@@ -44,9 +44,36 @@ Adoção da extensão **SonarQube for IDE** (antigo SonarLint) no VS Code para a
 
 Todas as mudanças foram verificadas com `manage.py check`, `npm run lint` e `npm run build`. O `seed_demo` também foi executado duas vezes contra um banco SQLite temporário, para confirmar que cria os dados e não os duplica.
 
+## Fase 6 — Testes automatizados e SonarQube Cloud no CI (outubro de 2026)
+
+Até aqui o projeto não tinha nenhum teste automatizado, e a análise do SonarQube era só local. Nesta fase o backend ganhou uma base de testes, e o pipeline do GitHub Actions passou a rodar os testes e enviar a análise e a cobertura ao SonarQube Cloud em todo Pull Request.
+
+- **Infraestrutura de testes**: adoção do **pytest** com `pytest-django` e `pytest-cov`. Os testes rodam com settings próprios (`skillbridge/settings_test.py`), sobre um banco SQLite em memória. Assim não dependem do `.env` e nunca tocam o banco real. As fixtures compartilhadas (usuários, empresa, projeto, inscrição) ficam em `core/tests/conftest.py`.
+- **Primeiros 32 testes**, concentrados nas regras de negócio de maior risco:
+  - concessão de XP e recálculo de nível e taxa de sucesso;
+  - bloqueio de reavaliação (que evita XP duplicado);
+  - permissões entre empresas;
+  - regras de envio de entrega (inscrição obrigatória, projeto ativo, etapa já aprovada);
+  - registro de aluno e de empresa, incluindo a validação de senha;
+  - logout, confirmando que o refresh token realmente deixa de funcionar.
+
+  Cobertura alcançada: 100% nos serializers, 93% nos models e 68% nas views.
+- **CI ampliado**: o job de backend passou a instalar `requirements-dev.txt` e rodar o `pytest`, publicando o relatório de cobertura. Um novo job, **SonarQube Cloud**, roda só depois dos testes passarem e envia a análise estática (Python e JavaScript) e a cobertura. O resultado do quality gate aparece em cada Pull Request.
+- **Cobertura com caminhos corretos**: a cobertura passou a ser medida a partir da raiz do repositório, com caminhos relativos. Na configuração inicial, os arquivos saíam sem a pasta (`urls.py` em vez de `core/urls.py`), e o SonarQube não conseguiria distinguir `core/urls.py` de `skillbridge/urls.py`.
+- **Escopo da métrica de cobertura**: o frontend (ainda sem testes) e os arquivos de configuração e scripts (`settings`, `asgi`/`wsgi`, `supabase_config`, `seed_demo`) ficaram fora da métrica, para que ela reflita as regras de negócio. O falso positivo do `@theme` (Fase 5) foi registrado na configuração da análise.
+- **Incidente de credencial corrigido**: durante a configuração, o token de acesso do SonarQube Cloud foi colado por engano no lugar da chave do projeto, em `sonar-project.properties`, e chegou a ser commitado. O scanner criou um projeto avulso com esse nome. O token foi substituído por um novo (atualizado no secret `SONAR_TOKEN` do GitHub) e o antigo revogado, o projeto avulso foi apagado e a chave correta (`Leandro1210_skillbridge`) foi configurada. Como na Fase 3, vale o registro: **um segredo que chega a um commit deve ser considerado vazado e revogado**, mesmo depois de removido do arquivo.
+
 ## O que ainda não existe
 
-Para não deixar dúvida sobre o estado atual do projeto: não há testes automatizados (nem backend, nem frontend), não há validação automática de código nas entregas (a avaliação é sempre manual pela empresa), não há notificações, e o sistema de recomendação de vagas por habilidade está implementado mas sem dado real para funcionar. A análise estática com SonarQube ainda é só local, pela extensão no editor: falta integrar o SonarQube Cloud ao CI (GitHub Actions), com quality gate nos Pull Requests. Essas lacunas estão detalhadas em [`documentacao-tecnica.md`](documentacao-tecnica.md#possíveis-evoluções-futuras).
+Para não deixar dúvida sobre o estado atual do projeto:
+- o frontend não tem testes automatizados;
+- o backend tem testes só para parte das views: faltam iniciar projeto, catálogo, vagas recomendadas, gestão de desafios pela empresa e perfis;
+- não há validação automática de código nas entregas (a avaliação é sempre manual pela empresa);
+- não há notificações;
+- o sistema de recomendação de vagas por habilidade está implementado, mas sem dado real para funcionar;
+- a branch `main` ainda não está protegida por regra que exija CI verde para o merge.
+
+Essas lacunas estão detalhadas em [`documentacao-tecnica.md`](documentacao-tecnica.md#possíveis-evoluções-futuras).
 
 
 Seguranca
