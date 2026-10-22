@@ -141,14 +141,21 @@ Os testes de API usam o `APIClient` do DRF com `force_authenticate`, que autenti
 
 | Arquivo | Cobre |
 |---|---|
-| `test_models.py` | XP por dificuldade, recálculo de nível (a cada 1000 XP), taxa de sucesso ignorando entregas pendentes |
+| `test_models.py` | XP por dificuldade, recálculo de nível (a cada 1000 XP), taxa de sucesso (ignorando pendentes, e zero sem entregas avaliadas), criação automática do perfil, `__str__` de todos os models |
 | `test_auth.py` | Registro de aluno e de empresa, senha criptografada e nunca devolvida na resposta, senhas diferentes, senha fraca, e-mail duplicado, campos obrigatórios de empresa, logout (incluindo que o refresh token deixa de funcionar depois dele) |
 | `test_entregas.py` | Envio de entrega: aluno não inscrito, etapa inexistente, projeto inativo, etapa já aprovada, URL inválida, caminho feliz (fica `pendente`) |
 | `test_empresa.py` | Avaliação: aprovação concede XP e sobe nível, reprovação com feedback, outra empresa não pode avaliar, entrega aprovada não pode ser reavaliada, status inválido, estudante não acessa rota de empresa. Dashboard com as contagens |
+| `test_empresa_desafios.py` | Gestão de desafios: criação vincula a empresa e gera a etapa principal; cada empresa vê, edita, exclui, publica e desativa só os próprios desafios (os da concorrente retornam 404). Submissões: só as dos próprios desafios, com filtro `?status=` |
+| `test_projetos.py` | Iniciar projeto (inscrição, duplicada, nível insuficiente, projeto inativo); catálogo (esconde inativos, filtro `?disponiveis=true`, lista resumida e detalhe com etapas, exige login); escrita bloqueada em `projetos/` e `etapas/` para não administradores; filtro de etapas por projeto; lista de inscrições isolada por aluno |
+| `test_vagas.py` | Vagas recomendadas: aparece só com **todos** os requisitos no nível exigido (incluindo o nível exato); some com nível abaixo ou requisito faltando; vaga sem requisitos não é recomendada; habilidade de outro aluno não conta |
+| `test_perfis.py` | `auth/me` (dados do logado, exige login, altera nome, **não** altera XP/nível/taxa); perfil do aluno (GET/PATCH, URL inválida); perfil da empresa (bloqueado para estudante, criado no primeiro acesso, PATCH); lista de entregas isolada por aluno |
 
-Na última medição eram **32 testes**, com cobertura de 100% em `serializers.py`, 93% em `models.py` e 68% em `views.py`.
+Na última medição eram **79 testes** (mais 1 marcado como falha esperada, abaixo), com **100% de cobertura** em `views.py`, `models.py`, `serializers.py` e `signals.py`.
 
-**Ainda sem teste** (próximos a escrever): `POST projetos/{id}/iniciar/` (nível mínimo, inscrição duplicada); filtros do catálogo (`ativo`, `?disponiveis=true`); vagas recomendadas; criação, edição, publicação e desativação de desafios pela empresa (incluindo bloqueio entre empresas); filtro de `empresa/submissoes/`; perfis (`auth/me`, `perfil/usuario`, `perfil/empresa`); isolamento das listas de entregas e inscrições por usuário.
+### Problemas conhecidos, revelados pelos testes
+
+- **Desafios da empresa sem o campo `ativo`**: o `ProjetoSerializer` não devolve `ativo`, mas a tela de desafios da empresa usa esse campo para mostrar "Ativo" ou "Rascunho". O teste `test_lista_de_desafios_informa_se_esta_ativo` documenta isso com `xfail(strict=True)`: ele "falha como esperado" hoje e passa a acusar erro assim que o campo for adicionado, lembrando de remover a marcação.
+- **Vagas recomendadas sem ordenação**: o `annotate(Count(...))` em `VagaRecomendadaView` faz o Django ignorar a ordenação padrão de `Vaga` (`-publicada_em`), e o DRF avisa (`UnorderedObjectListWarning`) que a paginação pode repetir ou pular itens entre páginas. A correção é acrescentar `.order_by('-publicada_em')` ao queryset.
 
 ## Integração contínua e análise de qualidade
 
@@ -173,7 +180,8 @@ O "Automatic Analysis" do SonarQube Cloud precisa ficar **desligado**, porque a 
 Ideias que ainda não foram implementadas, mantidas aqui como registro — não são compromissos de entrega:
 
 - Popular `HabilidadeUsuario` de fato, pra deixar a recomendação de vagas funcional.
-- Completar os testes do backend (lista em [Testes automatizados](#testes-automatizados)) e criar os do frontend (Vitest + Testing Library), incluindo a cobertura do frontend no SonarQube.
+- Corrigir os dois [problemas conhecidos](#problemas-conhecidos-revelados-pelos-testes) apontados pelos testes do backend.
+- Criar os testes do frontend (Vitest + Testing Library), incluindo a cobertura do frontend no SonarQube.
 - Proteger a branch `main` (ruleset do GitHub) exigindo CI verde e quality gate aprovado para fazer merge.
 - Remover ou passar a usar `skillbridge/supabase_config.py`, que hoje não é importado em lugar nenhum.
 - Notificação ao aluno quando uma entrega é avaliada (hoje ele só descobre ao abrir o app de novo).
