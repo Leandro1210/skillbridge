@@ -61,12 +61,22 @@ Até aqui o projeto não tinha nenhum teste automatizado, e a análise do SonarQ
 - **CI ampliado**: o job de backend passou a instalar `requirements-dev.txt` e rodar o `pytest`, publicando o relatório de cobertura. Um novo job, **SonarQube Cloud**, roda só depois dos testes passarem e envia a análise estática (Python e JavaScript) e a cobertura. O resultado do quality gate aparece em cada Pull Request.
 - **Cobertura com caminhos corretos**: a cobertura passou a ser medida a partir da raiz do repositório, com caminhos relativos. Na configuração inicial, os arquivos saíam sem a pasta (`urls.py` em vez de `core/urls.py`), e o SonarQube não conseguiria distinguir `core/urls.py` de `skillbridge/urls.py`.
 - **Escopo da métrica de cobertura**: o frontend (ainda sem testes) e os arquivos de configuração e scripts (`settings`, `asgi`/`wsgi`, `supabase_config`, `seed_demo`) ficaram fora da métrica, para que ela reflita as regras de negócio. O falso positivo do `@theme` (Fase 5) foi registrado na configuração da análise.
+- **Backend com cobertura completa**: numa segunda rodada, os testes passaram de 32 para **79**, cobrindo o que faltava:
+  - inscrição em projetos e catálogo;
+  - vagas recomendadas;
+  - gestão de desafios pela empresa, incluindo o isolamento entre empresas;
+  - listagem e filtro de submissões;
+  - perfis, e o isolamento das listas de cada aluno.
+
+  `views.py`, `models.py`, `serializers.py` e `signals.py` chegaram a **100% de cobertura**. Os novos testes revelaram dois problemas, registrados na [documentação técnica](documentacao-tecnica.md#problemas-conhecidos-revelados-pelos-testes):
+  - a lista de desafios da empresa não devolve o campo `ativo`, então a tela mostra tudo como "Rascunho";
+  - as vagas recomendadas são paginadas sem ordenação definida.
 
 ## O que ainda não existe
 
 Para não deixar dúvida sobre o estado atual do projeto:
 - o frontend não tem testes automatizados;
-- o backend tem testes só para parte das views: faltam iniciar projeto, catálogo, vagas recomendadas, gestão de desafios pela empresa e perfis;
+- dois problemas do backend apontados pelos testes ainda não foram corrigidos (campo `ativo` na lista de desafios da empresa e ordenação das vagas recomendadas);
 - não há validação automática de código nas entregas (a avaliação é sempre manual pela empresa);
 - não há notificações;
 - o sistema de recomendação de vagas por habilidade está implementado, mas sem dado real para funcionar;

@@ -29,6 +29,22 @@ def usuario_empresa(empresa):
 
 
 @pytest.fixture
+def usuario_outra_empresa(db):
+    """Usuário de uma empresa concorrente, para testar o isolamento entre empresas."""
+    outra = Empresa.objects.create(nome='Concorrente', setor='Tecnologia')
+    return Usuario.objects.create_user(
+        username='rh2', email='rh2@outra.com', password='SenhaForte#2026', nome='RH Outra', empresa=outra,
+    )
+
+
+@pytest.fixture
+def outro_estudante(db):
+    return Usuario.objects.create_user(
+        username='aluno2', email='aluno2@teste.com', password='SenhaForte#2026', nome='Outro Aluno',
+    )
+
+
+@pytest.fixture
 def projeto(empresa):
     projeto = Projeto.objects.create(
         empresa=empresa, titulo='API REST', descricao='...', ferramentas='Python, Django',
