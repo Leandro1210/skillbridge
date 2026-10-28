@@ -50,7 +50,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -60,12 +60,26 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Testes + cobertura
+        run: npm run coverage
+
+      # O Vitest grava os caminhos relativos a frontend/ (SF:src/App.jsx), mas o
+      # SonarQube analisa a partir da raiz do repositório (frontend/src/App.jsx).
+      - name: Ajustar caminhos do relatório de cobertura
+        run: sed -i 's#^SF:#SF:frontend/#' coverage/lcov.info
+
+      - name: Guardar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: frontend/coverage/lcov.info
+
       - name: Build
         run: npm run build
-  
+
   sonar:
     name: SonarQube Cloud
-    needs: backend
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -74,10 +88,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Baixar relatório de cobertura
+      - name: Baixar cobertura do backend
         uses: actions/download-artifact@v4
         with:
           name: coverage-backend
+
+      - name: Baixar cobertura do frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-frontend
+          path: frontend/coverage
 
       - name: SonarQube Scan
         if: env.SONAR_TOKEN != ''

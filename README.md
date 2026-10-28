@@ -16,7 +16,7 @@ Projeto Integrador do curso de Engenharia de Software (UniEVANGÉLICA).
 | Frontend | React 19 + Vite + Tailwind CSS 4 |
 | Banco de dados | PostgreSQL (Supabase) |
 | Hospedagem | Render (backend) + Vercel (frontend) |
-| Testes | pytest + pytest-django + pytest-cov (backend) |
+| Testes | pytest + pytest-django + pytest-cov (backend), Vitest + Testing Library (frontend) |
 | Qualidade e CI | GitHub Actions + SonarQube Cloud (análise estática e cobertura) |
 
 ## Estrutura do repositório
@@ -40,7 +40,7 @@ skillbridge/
 
 ### Pré-requisitos
 - Python 3.12 (a mesma versão do CI; no 3.14 o `Pillow<11` do `requirements.txt` não instala)
-- Node.js 18+
+- Node.js 22+ (o Vitest exige Node 22; o CI usa o 22)
 - Uma instância PostgreSQL acessível (local ou Supabase)
 
 ### 1. Backend (Django)
@@ -112,14 +112,19 @@ Os testes usam `skillbridge/settings_test.py`: banco **SQLite em memória**, sem
 
 ```bash
 cd frontend
+npm test                                # roda todos os testes (Vitest)
+npm run test:watch                      # modo interativo: re-roda ao salvar
+npm run coverage                        # testes + cobertura (tabela e coverage/lcov-report/index.html)
 npm run lint
 npm run build
 ```
 
+Os testes ficam ao lado de cada arquivo (`App.test.jsx`, `components/AuthPage.test.jsx`...). A API é sempre simulada com `vi.mock`, então os testes não dependem do backend rodando. A preparação comum (matchers do jest-dom, limpeza entre testes, suporte ao `<dialog>`) fica em `src/test/setup.js`.
+
 ## Qualidade de código
 
-- **CI (GitHub Actions)**: a cada push na `main` e em todo Pull Request, roda o `manage.py check` e o `pytest` com cobertura no backend, e o lint e o build no frontend. Depois envia o resultado para o SonarQube Cloud.
-- **SonarQube Cloud**: análise estática de Python e JavaScript, mais a cobertura dos testes do backend. O quality gate aparece como comentário em cada Pull Request. Painel: <https://sonarcloud.io/summary/new_code?id=Leandro1210_skillbridge>.
+- **CI (GitHub Actions)**: a cada push na `main` e em todo Pull Request, roda o `manage.py check` e o `pytest` com cobertura no backend, e o lint, os testes com cobertura e o build no frontend. Depois envia o resultado para o SonarQube Cloud.
+- **SonarQube Cloud**: análise estática de Python e JavaScript, mais a cobertura dos testes do backend e do frontend. O quality gate aparece como comentário em cada Pull Request. Painel: <https://sonarcloud.io/summary/new_code?id=Leandro1210_skillbridge>.
 - **SonarQube for IDE**: extensão do VS Code que mostra os mesmos alertas enquanto se edita o código. Recomendada em modo conectado (*Connected Mode*) ao projeto `Leandro1210_skillbridge`.
 
 ## Documentação complementar

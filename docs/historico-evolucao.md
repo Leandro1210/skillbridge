@@ -71,12 +71,26 @@ Até aqui o projeto não tinha nenhum teste automatizado, e a análise do SonarQ
   `views.py`, `models.py`, `serializers.py` e `signals.py` chegaram a **100% de cobertura**. Os novos testes revelaram dois problemas, registrados na [documentação técnica](documentacao-tecnica.md#problemas-conhecidos-revelados-pelos-testes):
   - a lista de desafios da empresa não devolve o campo `ativo`, então a tela mostra tudo como "Rascunho";
   - as vagas recomendadas são paginadas sem ordenação definida.
+- **Testes do frontend**: adoção do **Vitest** com **Testing Library** e **jsdom**, com **98 testes** e 85% de cobertura de linhas. Os testes cobrem:
+  - o armazenamento dos tokens;
+  - os interceptors do Axios: renovação do token com o refresh girado, um único refresh para vários 401 simultâneos, logout quando a renovação falha;
+  - as decisões de tela do `App`;
+  - o login, incluindo a recusa de uma conta do tipo errado sem revelar que a senha estava certa;
+  - os fluxos do aluno (catálogo, workspace, dashboard) e da empresa (desafios, submissões, painel);
+  - o `Modal`, o `ErrorBoundary` e as telas de perfil.
+
+  O CI passou a rodar esses testes, com o Node atualizado de 20 para 22 (exigência do Vitest), e a enviar a cobertura do frontend ao SonarQube. Como o Vitest grava os caminhos relativos a `frontend/`, o CI acrescenta esse prefixo ao relatório antes da análise, o mesmo tipo de ajuste feito na cobertura do backend.
+
+  Os testes revelaram três problemas no frontend, registrados na [documentação técnica](documentacao-tecnica.md#testes-do-frontend):
+  - campos de formulário cujo rótulo não está ligado ao campo;
+  - atalhos do painel da empresa que não funcionam pelo teclado;
+  - duas telas de visualização de perfil que não são usadas em lugar nenhum.
 
 ## O que ainda não existe
 
 Para não deixar dúvida sobre o estado atual do projeto:
-- o frontend não tem testes automatizados;
 - dois problemas do backend apontados pelos testes ainda não foram corrigidos (campo `ativo` na lista de desafios da empresa e ordenação das vagas recomendadas);
+- os problemas do frontend apontados pelos testes também não foram corrigidos (rótulos de formulário, atalhos sem teclado, telas de perfil não usadas);
 - não há validação automática de código nas entregas (a avaliação é sempre manual pela empresa);
 - não há notificações;
 - o sistema de recomendação de vagas por habilidade está implementado, mas sem dado real para funcionar;
