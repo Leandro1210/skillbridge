@@ -30,8 +30,8 @@ Frontend (React + Vite)  →  API REST (Django + DRF)  →  PostgreSQL (Supabase
 | Ícones | Material Symbols (SVGs individuais, não a fonte completa — ver `frontend/src/lib/icons.js`) |
 | Banco de dados | PostgreSQL (Supabase) |
 | Hospedagem | Render (backend) + Vercel (frontend) |
-| Testes | pytest + pytest-django + pytest-cov (backend) |
-| CI | GitHub Actions (`manage.py check`, `pytest`, `npm run lint`, `npm run build`) |
+| Testes | pytest + pytest-django + pytest-cov (backend), Vitest + Testing Library (frontend) |
+| CI | GitHub Actions (`manage.py check`, `pytest`, `npm run lint`, `npm run coverage`, `npm run build`) |
 | Qualidade | SonarQube Cloud (no CI) + SonarQube for IDE (no editor) |
 
 ## Modelo de dados
@@ -123,7 +123,7 @@ Lista completa em [`.env.example`](../.env.example) na raiz. Resumo:
 
 ## Testes automatizados
 
-O backend tem testes com **pytest** (via `pytest-django`), em `core/tests/`. O frontend ainda não tem testes.
+O backend tem testes com **pytest** (via `pytest-django`), em `core/tests/`. O frontend tem testes com **Vitest** e **Testing Library**, descritos em [Testes do frontend](#testes-do-frontend).
 
 ### Configuração
 
@@ -157,6 +157,32 @@ Na última medição eram **79 testes** (mais 1 marcado como falha esperada, aba
 - **Desafios da empresa sem o campo `ativo`**: o `ProjetoSerializer` não devolve `ativo`, mas a tela de desafios da empresa usa esse campo para mostrar "Ativo" ou "Rascunho". O teste `test_lista_de_desafios_informa_se_esta_ativo` documenta isso com `xfail(strict=True)`: ele "falha como esperado" hoje e passa a acusar erro assim que o campo for adicionado, lembrando de remover a marcação.
 - **Vagas recomendadas sem ordenação**: o `annotate(Count(...))` em `VagaRecomendadaView` faz o Django ignorar a ordenação padrão de `Vaga` (`-publicada_em`), e o DRF avisa (`UnorderedObjectListWarning`) que a paginação pode repetir ou pular itens entre páginas. A correção é acrescentar `.order_by('-publicada_em')` ao queryset.
 
+### Testes do frontend
+
+Os testes rodam com **Vitest** em ambiente **jsdom** (navegador simulado) e usam a **Testing Library** para renderizar os componentes e interagir como um usuário faria (`user-event`: digitar, clicar). A configuração fica no bloco `test` do `frontend/vite.config.js`, e a preparação comum em `frontend/src/test/setup.js`:
+- matchers do jest-dom (`toBeInTheDocument`, `toBeDisabled`...);
+- limpeza do DOM, do `localStorage` e dos mocks entre os testes;
+- uma versão mínima de `showModal()`/`close()`, que o jsdom não implementa e o `Modal` usa.
+
+Cada arquivo de teste fica ao lado do arquivo testado (`AuthPage.jsx` → `AuthPage.test.jsx`). A API é sempre simulada com `vi.mock('../api')`, então os testes não dependem do backend. A exceção é o `api.test.js`: ele testa os interceptors reais do Axios e troca só o *adapter*, a parte que faria a requisição de rede.
+
+| Arquivo | Cobre |
+|---|---|
+| `auth.test.js`, `lib/difficulty.test.js` | Gravação e limpeza dos tokens, evento de logout, vocabulário de dificuldade alinhado ao backend |
+| `api.test.js` | Envio do token; após um 401, o refresh **salva os dois tokens novos** e repete a requisição; vários 401 simultâneos fazem **um único** refresh; falha no refresh ou falta de refresh token encerra a sessão; sem loop quando a repetição também dá 401 |
+| `App.test.jsx` | Qual tela mostrar (login, carregando, aluno, empresa), "Tentar novamente" quando o perfil falha, logout pelo evento do `api.js` e pelo botão "Sair" (inclusive quando o servidor falha) |
+| `AuthPage.test.jsx` | Login, mensagem genérica para credenciais erradas, **conta do tipo errado recusada com a mesma mensagem e sessão desfeita**, cadastro de aluno e de empresa, erro de campo vindo do backend |
+| `ProjectCatalog`, `ProjectWorkspace` | Projeto bloqueado por nível, aceitar desafio, erro de inscrição; etapa ativa, estados aprovada/pendente/reprovada, envio de entrega |
+| `CompanyChallenges`, `CompanySubmissions`, `CompanyDashboard` | Criar, editar, publicar, desativar e excluir (com confirmação) desafios; filtros e avaliação de submissões; estatísticas e atalhos do painel |
+| `Dashboard`, `ProfileEdit`, `ui/Modal`, `ErrorBoundary` | Progresso de XP e tom do selo de sucesso; carregar e salvar perfis; abrir e fechar o modal (Esc, fundo, botão); tela de recuperação em vez de tela branca |
+
+Na última medição eram **98 testes**, com **85% de cobertura de linhas** no frontend (acima de 95% em `AuthPage`, `ProjectCatalog`, `ProjectWorkspace` e `Dashboard`).
+
+**Problemas encontrados ao escrever os testes do frontend:**
+- **Campos de formulário sem `id`**: em `CompanyChallenges`, `ProjectWorkspace` e nas telas de edição de perfil, o `<label>` não fica ligado ao campo. Leitores de tela não anunciam o nome do campo, e clicar no rótulo não foca o campo. A correção é fazer o componente `Input` gerar um `id` com `useId()` quando nenhum for passado.
+- **Atalhos do painel da empresa só funcionam com mouse**: as "Ações Rápidas" do `CompanyDashboard` são `div`s clicáveis, sem foco por teclado. É o mesmo problema que o stepper do workspace tinha na Fase 5.
+- **Código morto**: `StudentProfileView.jsx` e `CompanyProfileView.jsx` não são importados em lugar nenhum (o App usa só as telas de edição). Eles aparecem com 0% de cobertura. Podem ser removidos ou passar a ser usados.
+
 ## Integração contínua e análise de qualidade
 
 O workflow `.github/workflows/ci.yml` roda a cada push na `main` e em todo Pull Request para a `main`:
@@ -164,13 +190,13 @@ O workflow `.github/workflows/ci.yml` roda a cada push na `main` e em todo Pull 
 | Job | Etapas |
 |---|---|
 | `Backend (Django)` | Python 3.12 → `pip install -r requirements-dev.txt` → `manage.py check` → `pytest` → publica o `coverage.xml` como artefato |
-| `Frontend (React)` | Node 20 → `npm ci` → `npm run lint` → `npm run build` |
-| `SonarQube Cloud` | Roda depois do backend (`needs: backend`). Baixa o `coverage.xml` e executa o scanner (`SonarSource/sonarqube-scan-action`) com o secret `SONAR_TOKEN`. Se o secret não estiver disponível (por exemplo, em PR vindo de fork), o passo é pulado em vez de quebrar o CI |
+| `Frontend (React)` | Node 22 → `npm ci` → `npm run lint` → `npm run coverage` → corrige os caminhos do `lcov.info` (prefixa `frontend/`) → publica o relatório como artefato → `npm run build` |
+| `SonarQube Cloud` | Roda depois do backend e do frontend (`needs: [backend, frontend]`). Baixa o `coverage.xml` e o `lcov.info` e executa o scanner (`SonarSource/sonarqube-scan-action`) com o secret `SONAR_TOKEN`. Se o secret não estiver disponível (por exemplo, em PR vindo de fork), o passo é pulado em vez de quebrar o CI |
 
 A configuração da análise fica em `sonar-project.properties`:
 - **Projeto**: organização `leandro1210`, chave `Leandro1210_skillbridge`.
-- **Código analisado**: `core`, `skillbridge` e `frontend/src`, com os testes declarados à parte (`sonar.tests=core/tests`). Migrations e assets ficam fora.
-- **Cobertura**: lida de `coverage.xml`. O frontend fica fora da métrica de cobertura até ganhar testes, assim como arquivos de configuração (`settings*`, `asgi`, `wsgi`, `supabase_config`) e o comando `seed_demo`.
+- **Código analisado**: `core`, `skillbridge` e `frontend/src`, com os testes declarados à parte: `core/tests` e os `*.test.js(x)` do frontend, via `sonar.test.inclusions`. Migrations e assets ficam fora.
+- **Cobertura**: lida de `coverage.xml` (backend) e de `frontend/coverage/lcov.info` (frontend). Ficam fora da métrica os arquivos de configuração (`settings*`, `asgi`, `wsgi`, `supabase_config`), o comando `seed_demo` e o `main.jsx`.
 - **Falso positivo ignorado**: a regra `css:S4662` em `frontend/src/index.css`, porque `@theme` é diretiva do Tailwind CSS 4.
 
 O "Automatic Analysis" do SonarQube Cloud precisa ficar **desligado**, porque a análise é feita pelo CI. No editor, a extensão SonarQube for IDE pode ser conectada ao mesmo projeto (Connected Mode) para usar as mesmas regras e os mesmos alertas já revisados.
@@ -181,7 +207,7 @@ Ideias que ainda não foram implementadas, mantidas aqui como registro — não 
 
 - Popular `HabilidadeUsuario` de fato, pra deixar a recomendação de vagas funcional.
 - Corrigir os dois [problemas conhecidos](#problemas-conhecidos-revelados-pelos-testes) apontados pelos testes do backend.
-- Criar os testes do frontend (Vitest + Testing Library), incluindo a cobertura do frontend no SonarQube.
+- Corrigir os problemas de acessibilidade e o código morto apontados pelos [testes do frontend](#testes-do-frontend).
 - Proteger a branch `main` (ruleset do GitHub) exigindo CI verde e quality gate aprovado para fazer merge.
 - Remover ou passar a usar `skillbridge/supabase_config.py`, que hoje não é importado em lugar nenhum.
 - Notificação ao aluno quando uma entrega é avaliada (hoje ele só descobre ao abrir o app de novo).
