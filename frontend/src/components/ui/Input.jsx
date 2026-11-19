@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import clsx from 'clsx';
 
 /** M3 outlined text field — https://m3.material.io/components/text-fields */
@@ -9,6 +10,15 @@ const fieldClasses = (error) =>
       ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
       : 'border-outline focus:border-primary focus:ring-2 focus:ring-primary/20',
   );
+
+/**
+ * Usa o id passado ou gera um. Sem id, o <label htmlFor> não fica ligado ao
+ * campo: leitores de tela não anunciam o nome e clicar no rótulo não foca.
+ */
+function useFieldId(id) {
+  const gerado = useId();
+  return id ?? gerado;
+}
 
 function FieldWrapper({ id, label, error, children }) {
   return (
@@ -25,18 +35,20 @@ function FieldWrapper({ id, label, error, children }) {
 }
 
 export function Input({ id, label, error, className, ...rest }) {
+  const fieldId = useFieldId(id);
   return (
-    <FieldWrapper id={id} label={label} error={error}>
-      <input id={id} className={clsx(fieldClasses(error), className)} {...rest} />
+    <FieldWrapper id={fieldId} label={label} error={error}>
+      <input id={fieldId} className={clsx(fieldClasses(error), className)} {...rest} />
     </FieldWrapper>
   );
 }
 
 export function Textarea({ id, label, error, className, rows = 4, ...rest }) {
+  const fieldId = useFieldId(id);
   return (
-    <FieldWrapper id={id} label={label} error={error}>
+    <FieldWrapper id={fieldId} label={label} error={error}>
       <textarea
-        id={id}
+        id={fieldId}
         rows={rows}
         className={clsx(fieldClasses(error), 'resize-y', className)}
         {...rest}
@@ -46,9 +58,10 @@ export function Textarea({ id, label, error, className, rows = 4, ...rest }) {
 }
 
 export function Select({ id, label, error, className, children, ...rest }) {
+  const fieldId = useFieldId(id);
   return (
-    <FieldWrapper id={id} label={label} error={error}>
-      <select id={id} className={clsx(fieldClasses(error), className)} {...rest}>
+    <FieldWrapper id={fieldId} label={label} error={error}>
+      <select id={fieldId} className={clsx(fieldClasses(error), className)} {...rest}>
         {children}
       </select>
     </FieldWrapper>

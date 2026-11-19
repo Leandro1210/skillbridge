@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import Card from './ui/Card';
 import Icon from './ui/Icon';
@@ -17,19 +18,19 @@ const STAT_TILES = [
 
 const ACTIONS = [
   {
-    page: 'company-desafios',
+    to: '/empresa/desafios',
     icon: 'checklist',
     title: 'Gerenciar Desafios',
     description: 'Criar, editar e publicar desafios técnicos.',
   },
   {
-    page: 'company-submissoes',
+    to: '/empresa/submissoes',
     icon: 'task_alt',
     title: 'Avaliar Submissões',
     description: (stats) => `${stats.submissoes_pendentes} aguardando avaliação`,
   },
   {
-    page: null,
+    to: null,
     icon: 'trending_up',
     title: 'Ver Resultados',
     description: 'Em breve',
@@ -40,7 +41,7 @@ const ACTIONS = [
 /**
  * CompanyDashboard — Painel da Empresa
  */
-export default function CompanyDashboard({ onNavigate }) {
+export default function CompanyDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -120,21 +121,30 @@ export default function CompanyDashboard({ onNavigate }) {
         <Card padding="lg">
           <p className="mb-2 text-title-small text-on-surface">Ações Rápidas</p>
           <div className="-mx-2">
-            {ACTIONS.map((action) => (
-              <ListItem
-                key={action.title}
-                className={`cursor-pointer px-2 transition-colors hover:bg-on-surface/5 ${action.disabled ? 'pointer-events-none opacity-50' : ''}`}
-                onClick={() => action.page && onNavigate(action.page)}
-                leading={
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-                    <Icon name={action.icon} size="1.2rem" />
-                  </div>
-                }
-                title={action.title}
-                subtitle={typeof action.description === 'function' ? action.description(stats) : action.description}
-                trailing={!action.disabled && <Icon name="arrow_forward" size="1.1rem" className="text-on-surface-variant/60" />}
-              />
-            ))}
+            {ACTIONS.map((action) => {
+              const item = (
+                <ListItem
+                  leading={
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+                      <Icon name={action.icon} size="1.2rem" />
+                    </div>
+                  }
+                  title={action.title}
+                  subtitle={typeof action.description === 'function' ? action.description(stats) : action.description}
+                  trailing={!action.disabled && <Icon name="arrow_forward" size="1.1rem" className="text-on-surface-variant/60" />}
+                />
+              );
+              // Link de verdade (foco e Enter pelo teclado), não uma div clicável
+              return action.to ? (
+                <Link key={action.title} to={action.to} className="block rounded-[var(--radius-sm)] px-2 transition-colors hover:bg-on-surface/5">
+                  {item}
+                </Link>
+              ) : (
+                <div key={action.title} aria-disabled="true" className="px-2 opacity-50">
+                  {item}
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>

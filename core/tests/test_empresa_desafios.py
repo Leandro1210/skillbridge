@@ -4,6 +4,12 @@ import pytest
 from core.models import Entrega, Projeto
 
 DESAFIOS_URL = '/api/empresa/projetos/'
+
+# a vaga é obrigatória ao criar: é o que o aluno vê primeiro no feed
+VAGA = {
+    'vaga_titulo': 'Estágio Back-end', 'vaga_descricao': 'Apoio no desenvolvimento das APIs.',
+    'vaga_tecnologias': 'Python, SQL',
+}
 SUBMISSOES_URL = '/api/empresa/submissoes/'
 
 
@@ -27,15 +33,52 @@ def projeto_da_concorrente(usuario_outra_empresa):
 def test_criar_desafio_vincula_empresa_e_gera_etapa(api_client, usuario_empresa):
     api_client.force_authenticate(usuario_empresa)
     resp = api_client.post(DESAFIOS_URL, {
+        **VAGA, 'vaga_modalidade': 'hibrido',
         'titulo': 'Novo desafio', 'descricao': '...', 'ferramentas': 'Python', 'dificuldade': 'facil',
     })
 
     assert resp.status_code == 201
     projeto = Projeto.objects.get(titulo='Novo desafio')
     assert projeto.empresa == usuario_empresa.empresa
+    assert (projeto.vaga_titulo, projeto.vaga_modalidade) == ('Estágio Back-end', 'hibrido')
     # todo desafio novo nasce com a etapa principal criada automaticamente
     assert projeto.etapas.count() == 1
     assert projeto.etapas.first().ordem == 1
+    # e como rascunho: só aparece no feed depois de publicado
+    assert projeto.status == 'rascunho'
+    assert projeto.publicado_em is None
+
+
+def test_criar_desafio_com_prazo_e_periodo_recomendado(api_client, usuario_empresa):
+    api_client.force_authenticate(usuario_empresa)
+    resp = api_client.post(DESAFIOS_URL, {
+        **VAGA, 'titulo': 'Com prazo', 'descricao': '...', 'ferramentas': 'Python',
+        'prazo': '2030-12-31', 'periodo_recomendado': 4,
+    })
+
+    assert resp.status_code == 201
+    assert resp.data['prazo'] == '2030-12-31'
+    assert resp.data['periodo_recomendado'] == 4
+
+
+@pytest.mark.parametrize('campo', ['vaga_titulo', 'vaga_descricao', 'vaga_tecnologias'])
+def test_vaga_e_obrigatoria_ao_criar(api_client, usuario_empresa, campo):
+    api_client.force_authenticate(usuario_empresa)
+    dados = {**VAGA, campo: '', 'titulo': 'X', 'descricao': '.', 'ferramentas': 'Go'}
+
+    resp = api_client.post(DESAFIOS_URL, dados)
+
+    assert resp.status_code == 400
+    assert campo in resp.data
+
+
+def test_empresa_nao_muda_status_por_patch(api_client, usuario_empresa, projeto):
+    # status só muda pelas ações publicar/encerrar
+    api_client.force_authenticate(usuario_empresa)
+    api_client.patch(desafio_url(projeto), {'status': 'encerrado'})
+
+    projeto.refresh_from_db()
+    assert projeto.status == 'publicado'
 
 
 def test_empresa_lista_so_os_proprios_desafios(api_client, usuario_empresa, projeto, projeto_da_concorrente):
@@ -53,17 +96,13 @@ def test_estudante_nao_acessa_gestao_de_desafios(api_client, estudante):
     assert api_client.post(DESAFIOS_URL, {'titulo': 'X', 'descricao': '...', 'ferramentas': 'Python'}).status_code == 403
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason='Bug conhecido: ProjetoSerializer não inclui o campo "ativo", então a tela da empresa '
-           'mostra todo desafio como "Rascunho". Quando o campo for adicionado, este teste passa '
-           'e o xfail deve ser removido.',
-)
-def test_lista_de_desafios_informa_se_esta_ativo(api_client, usuario_empresa, projeto):
+def test_lista_de_desafios_informa_status_e_prazo(api_client, usuario_empresa, projeto):
+    # antes, o campo "ativo" não vinha na resposta e a tela mostrava tudo como "Rascunho"
     api_client.force_authenticate(usuario_empresa)
-    resp = api_client.get(DESAFIOS_URL)
+    item = api_client.get(DESAFIOS_URL).data['results'][0]
 
-    assert resp.data['results'][0]['ativo'] is True
+    assert item['status'] == 'publicado'
+    assert 'prazo' in item
 
 
 # Editar e excluir
@@ -103,29 +142,45 @@ def test_nao_exclui_desafio_de_outra_empresa(api_client, usuario_empresa, projet
     assert Projeto.objects.filter(id=projeto_da_concorrente.id).exists()
 
 
-# Publicar e desativar
+# Publicar e encerrar
 
-def test_desativar_e_publicar_desafio(api_client, usuario_empresa, projeto):
+def test_publicar_rascunho_registra_a_data(api_client, usuario_empresa, projeto):
+    projeto.status = 'rascunho'
+    projeto.publicado_em = None
+    projeto.save()
+
     api_client.force_authenticate(usuario_empresa)
+    resp = api_client.post(desafio_url(projeto, 'publicar/'))
 
-    resp = api_client.post(desafio_url(projeto, 'desativar/'))
     assert resp.status_code == 200
     projeto.refresh_from_db()
-    assert projeto.ativo is False
+    assert projeto.status == 'publicado'
+    assert projeto.publicado_em is not None
+
+
+def test_encerrar_e_reabrir_desafio(api_client, usuario_empresa, projeto):
+    publicado_em = projeto.publicado_em
+    api_client.force_authenticate(usuario_empresa)
+
+    resp = api_client.post(desafio_url(projeto, 'encerrar/'))
+    assert resp.status_code == 200
+    projeto.refresh_from_db()
+    assert projeto.status == 'encerrado'
 
     resp = api_client.post(desafio_url(projeto, 'publicar/'))
     assert resp.status_code == 200
     projeto.refresh_from_db()
-    assert projeto.ativo is True
+    assert projeto.status == 'publicado'
+    assert projeto.publicado_em == publicado_em  # reabrir não muda a data da 1ª publicação
 
 
-def test_nao_desativa_desafio_de_outra_empresa(api_client, usuario_empresa, projeto_da_concorrente):
+def test_nao_encerra_desafio_de_outra_empresa(api_client, usuario_empresa, projeto_da_concorrente):
     api_client.force_authenticate(usuario_empresa)
-    resp = api_client.post(desafio_url(projeto_da_concorrente, 'desativar/'))
+    resp = api_client.post(desafio_url(projeto_da_concorrente, 'encerrar/'))
 
     assert resp.status_code == 404
     projeto_da_concorrente.refresh_from_db()
-    assert projeto_da_concorrente.ativo is True
+    assert projeto_da_concorrente.status == 'rascunho'
 
 
 # Submissões recebidas

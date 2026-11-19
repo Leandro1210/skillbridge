@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import { DIFF_LABELS, DIFFICULTY_TONE } from '../lib/difficulty';
+import { textoPrazo } from '../lib/datas';
+import { MODALIDADES, tituloDaVaga } from '../lib/vaga';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
@@ -11,12 +13,54 @@ import Fab from './ui/Fab';
 import { Input, Textarea, Select } from './ui/Input';
 
 const EMPTY_FORM = {
+  vaga_titulo: '',
+  vaga_modalidade: '',
+  vaga_descricao: '',
+  vaga_tecnologias: '',
   titulo: '',
   descricao: '',
   ferramentas: '',
   dificuldade: 'medio',
-  nivel_minimo: 1,
+  prazo: '',
+  periodo_recomendado: '',
 };
+
+const STATUS = {
+  rascunho: { rotulo: 'Rascunho', tom: 'neutral' },
+  publicado: { rotulo: 'Publicado', tom: 'success' },
+  encerrado: { rotulo: 'Encerrado', tom: 'error' },
+};
+
+/** Campos que a API aceita; vazio vira null (prazo e período são opcionais). */
+function paraPayload(form) {
+  return {
+    vaga_titulo: form.vaga_titulo,
+    vaga_modalidade: form.vaga_modalidade,
+    vaga_descricao: form.vaga_descricao,
+    vaga_tecnologias: form.vaga_tecnologias,
+    titulo: form.titulo,
+    descricao: form.descricao,
+    ferramentas: form.ferramentas,
+    dificuldade: form.dificuldade,
+    prazo: form.prazo || null,
+    periodo_recomendado: form.periodo_recomendado === '' ? null : Number(form.periodo_recomendado),
+  };
+}
+
+function paraFormulario(desafio) {
+  return {
+    vaga_titulo: desafio.vaga_titulo ?? '',
+    vaga_modalidade: desafio.vaga_modalidade ?? '',
+    vaga_descricao: desafio.vaga_descricao ?? '',
+    vaga_tecnologias: desafio.vaga_tecnologias ?? '',
+    titulo: desafio.titulo,
+    descricao: desafio.descricao,
+    ferramentas: desafio.ferramentas ?? '',
+    dificuldade: desafio.dificuldade,
+    prazo: desafio.prazo ?? '',
+    periodo_recomendado: desafio.periodo_recomendado ?? '',
+  };
+}
 
 /**
  * CompanyChallenges — Gerenciar Desafios da Empresa
@@ -51,9 +95,9 @@ export default function CompanyChallenges() {
     e.preventDefault();
     try {
       if (editingId) {
-        await api.patch(`/empresa/projetos/${editingId}/`, formData);
+        await api.patch(`/empresa/projetos/${editingId}/`, paraPayload(formData));
       } else {
-        await api.post('/empresa/projetos/', formData);
+        await api.post('/empresa/projetos/', paraPayload(formData));
       }
       resetForm();
       void loadChallenges();
@@ -79,13 +123,13 @@ export default function CompanyChallenges() {
     }
   };
 
-  const handleDeactivate = async (id) => {
+  const handleClose = async (id) => {
     try {
-      await api.post(`/empresa/projetos/${id}/desativar/`);
+      await api.post(`/empresa/projetos/${id}/encerrar/`);
       void loadChallenges();
     } catch (err) {
       console.error(err);
-      setError('Erro ao desativar desafio');
+      setError('Erro ao encerrar desafio');
     }
   };
 
@@ -143,46 +187,103 @@ export default function CompanyChallenges() {
             {editingId ? 'Editar Desafio' : 'Criar Novo Desafio'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <Input
-              label="Título do Desafio"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              placeholder="Ex: API de E-commerce com Node.js"
-              required
-            />
-            <Textarea
-              label="Descrição Detalhada"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-              placeholder="Descreva o que o candidato deve construir, os requisitos técnicos e critérios de avaliação..."
-              rows={5}
-              required
-            />
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Input
-                label="Ferramentas (separadas por vírgula)"
-                value={formData.ferramentas}
-                onChange={(e) => setFormData({ ...formData, ferramentas: e.target.value })}
-                placeholder="React, Node.js, MongoDB"
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <fieldset className="space-y-5">
+              <legend className="mb-1 text-title-medium text-on-surface">Sobre a vaga</legend>
+              <p className="!mt-0 text-body-small text-on-surface-variant">É o que o aluno vê primeiro, no feed de oportunidades.</p>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Título da vaga"
+                    value={formData.vaga_titulo}
+                    onChange={(e) => setFormData({ ...formData, vaga_titulo: e.target.value })}
+                    placeholder="Ex: Estágio em Desenvolvimento Back-end"
+                    required
+                  />
+                </div>
+                <Select
+                  label="Modalidade"
+                  value={formData.vaga_modalidade}
+                  onChange={(e) => setFormData({ ...formData, vaga_modalidade: e.target.value })}
+                >
+                  <option value="">Não informar</option>
+                  {Object.entries(MODALIDADES).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+                </Select>
+              </div>
+              <Textarea
+                label="Descrição da vaga"
+                value={formData.vaga_descricao}
+                onChange={(e) => setFormData({ ...formData, vaga_descricao: e.target.value })}
+                placeholder="Atividades, o que a empresa oferece, carga horária, como é o dia a dia..."
+                rows={4}
+                required
               />
-              <Select
-                label="Dificuldade"
-                value={formData.dificuldade}
-                onChange={(e) => setFormData({ ...formData, dificuldade: e.target.value })}
-              >
-                <option value="facil">Fácil</option>
-                <option value="medio">Médio</option>
-                <option value="dificil">Difícil</option>
-              </Select>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Input
+                  label="Tecnologias esperadas (separadas por vírgula)"
+                  value={formData.vaga_tecnologias}
+                  onChange={(e) => setFormData({ ...formData, vaga_tecnologias: e.target.value })}
+                  placeholder="O que o aluno deve saber. Ex: Python, SQL, Git"
+                  required
+                />
+                <Input
+                  type="number"
+                  min="1"
+                  max="12"
+                  label="Período recomendado (opcional)"
+                  value={formData.periodo_recomendado}
+                  onChange={(e) => setFormData({ ...formData, periodo_recomendado: e.target.value })}
+                  placeholder="Ex: 4"
+                />
+              </div>
+            </fieldset>
+
+            <hr className="border-outline-variant" />
+
+            <fieldset className="space-y-5">
+              <legend className="mb-1 text-title-medium text-on-surface">O desafio</legend>
+              <p className="!mt-0 text-body-small text-on-surface-variant">
+                Um problema relacionado à vaga, para testar o conhecimento do aluno. Não precisa repetir a vaga.
+              </p>
               <Input
-                type="number"
-                min="1"
-                label="Nível Mínimo Exigido (Estudante)"
-                value={formData.nivel_minimo}
-                onChange={(e) => setFormData({ ...formData, nivel_minimo: Number.parseInt(e.target.value) || 1 })}
+                label="Título do Desafio"
+                value={formData.titulo}
+                onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                placeholder="Ex: API de E-commerce com Node.js"
+                required
               />
-            </div>
+              <Textarea
+                label="Descrição Detalhada"
+                value={formData.descricao}
+                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                placeholder="Descreva o que o candidato deve construir, os requisitos técnicos e critérios de avaliação..."
+                rows={5}
+                required
+              />
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <Input
+                  label="Ferramentas (separadas por vírgula)"
+                  value={formData.ferramentas}
+                  onChange={(e) => setFormData({ ...formData, ferramentas: e.target.value })}
+                  placeholder="React, Node.js, MongoDB"
+                />
+                <Select
+                  label="Dificuldade"
+                  value={formData.dificuldade}
+                  onChange={(e) => setFormData({ ...formData, dificuldade: e.target.value })}
+                >
+                  <option value="facil">Fácil</option>
+                  <option value="medio">Médio</option>
+                  <option value="dificil">Difícil</option>
+                </Select>
+                <Input
+                  type="date"
+                  label="Prazo para participar (opcional)"
+                  value={formData.prazo}
+                  onChange={(e) => setFormData({ ...formData, prazo: e.target.value })}
+                />
+              </div>
+            </fieldset>
 
             <div className="mt-6 flex flex-col-reverse gap-3 border-t border-outline-variant pt-4 sm:flex-row">
               <Button type="button" variant="outlined" onClick={resetForm}>Cancelar</Button>
@@ -198,25 +299,40 @@ export default function CompanyChallenges() {
         {challenges.map((challenge) => {
           const label = DIFF_LABELS[challenge.dificuldade] ?? challenge.dificuldade;
           const tone = DIFFICULTY_TONE[challenge.dificuldade] ?? 'warning';
+          const status = STATUS[challenge.status] ?? STATUS.rascunho;
+          const prazo = textoPrazo(challenge.prazo);
           return (
             <Card key={challenge.id} padding="lg" hoverable className="flex flex-col">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="mb-2 line-clamp-1 text-title-large text-on-surface" title={challenge.titulo}>
-                    {challenge.titulo}
+                  <h3 className="line-clamp-1 text-title-large text-on-surface" title={tituloDaVaga(challenge)}>
+                    {tituloDaVaga(challenge)}
                   </h3>
+                  <p className="mb-2 mt-0.5 text-body-small text-on-surface-variant">
+                    Desafio: <span className="font-medium text-on-surface">{challenge.titulo}</span>
+                    {challenge.vaga_modalidade && ` · ${MODALIDADES[challenge.vaga_modalidade] ?? challenge.vaga_modalidade}`}
+                  </p>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone="neutral">Nível mín: {challenge.nivel_minimo}</Badge>
                     <Badge tone={tone} dot>{label}</Badge>
+                    {challenge.periodo_recomendado && (
+                      <Badge tone="neutral">{challenge.periodo_recomendado}º período+</Badge>
+                    )}
+                    {prazo && <Badge tone="neutral">{prazo}</Badge>}
                   </div>
                 </div>
-                <Badge tone={challenge.ativo ? 'success' : 'neutral'} dot className="shrink-0">
-                  {challenge.ativo ? 'Ativo' : 'Rascunho'}
+                <Badge tone={status.tom} dot className="shrink-0">
+                  {status.rotulo}
                 </Badge>
               </div>
 
               <p className="mb-4 flex-1 line-clamp-3 text-body-medium text-on-surface-variant">
-                {challenge.descricao}
+                {challenge.vaga_descricao || challenge.descricao}
+              </p>
+
+              <p className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-body-small text-on-surface-variant">
+                <span><span className="font-medium text-on-surface">{challenge.participantes ?? 0}</span> participantes</span>
+                <span><span className="font-medium text-on-surface">{challenge.submissoes ?? 0}</span> submissões</span>
+                <span><span className="font-medium text-on-surface">{challenge.aprovados ?? 0}</span> aprovados</span>
               </p>
 
               {challenge.ferramentas && (
@@ -230,19 +346,21 @@ export default function CompanyChallenges() {
               )}
 
               {/* flex-wrap em vez de grid-cols-3 fixo: em telas estreitas
-                  "Desativar" não cabe em um terço da largura e empurrava o
+                  "Encerrar" não cabe em um terço da largura e empurrava o
                   card — e com ele a página inteira — para fora da viewport. */}
               <div className="mt-auto flex flex-wrap gap-2 border-t border-outline-variant pt-4">
-                {challenge.ativo ? (
-                  <Button variant="outlined" size="sm" onClick={() => handleDeactivate(challenge.id)}>Desativar</Button>
+                {challenge.status === 'publicado' ? (
+                  <Button variant="outlined" size="sm" onClick={() => handleClose(challenge.id)}>Encerrar</Button>
                 ) : (
-                  <Button variant="tonal" size="sm" onClick={() => handlePublish(challenge.id)}>Publicar</Button>
+                  <Button variant="tonal" size="sm" onClick={() => handlePublish(challenge.id)}>
+                    {challenge.status === 'encerrado' ? 'Reabrir' : 'Publicar'}
+                  </Button>
                 )}
                 <Button
                   variant="outlined"
                   size="sm"
                   onClick={() => {
-                    setFormData(challenge);
+                    setFormData(paraFormulario(challenge));
                     setEditingId(challenge.id);
                     setShowForm(true);
                     window.scrollTo({ top: 0, behavior: 'smooth' });

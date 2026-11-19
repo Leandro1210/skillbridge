@@ -16,8 +16,10 @@ def test_me_retorna_o_usuario_logado(api_client, estudante):
 
     assert resp.status_code == 200
     assert resp.data['email'] == 'aluno@teste.com'
-    assert resp.data['nivel'] == 1
     assert 'perfil' in resp.data
+    # o XP saiu do usuário: agora é atividade da temporada, em /perfil/atividade/
+    assert 'xp_total' not in resp.data
+    assert 'nivel' not in resp.data
 
 
 @pytest.mark.django_db
@@ -34,16 +36,14 @@ def test_me_permite_alterar_nome(api_client, estudante):
     assert estudante.nome == 'Nome Novo'
 
 
-def test_me_nao_permite_alterar_xp_nem_nivel(api_client, estudante):
+def test_me_nao_permite_trocar_de_empresa(api_client, estudante, empresa):
     api_client.force_authenticate(estudante)
-    resp = api_client.patch(ME_URL, {'xp_total': 99999, 'nivel': 50, 'taxa_sucesso': 100})
+    resp = api_client.patch(ME_URL, {'empresa': empresa.id})
 
     # o DRF ignora campos somente leitura em vez de dar erro
     assert resp.status_code == 200
     estudante.refresh_from_db()
-    assert estudante.xp_total == 0
-    assert estudante.nivel == 1
-    assert estudante.taxa_sucesso == 0.0
+    assert estudante.empresa is None
 
 
 # /perfil/usuario/

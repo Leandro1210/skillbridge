@@ -24,14 +24,16 @@ const HOVER = {
 
 export default function Card({
   variant = 'elevated',
+  as = 'div', // ex.: "article" para um item de feed
   hoverable = false,
   padding = 'md',
   className,
   children,
   ...rest
 }) {
+  const Tag = as;
   return (
-    <div
+    <Tag
       className={clsx(
         'rounded-[var(--radius-lg)] transition-all duration-200',
         VARIANTS[variant],
@@ -42,6 +44,6 @@ export default function Card({
       {...rest}
     >
       {children}
-    </div>
+    </Tag>
   );
 }

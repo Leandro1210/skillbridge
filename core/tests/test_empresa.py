@@ -1,23 +1,25 @@
-from core.models import Empresa, Entrega, Usuario
+from core.models import Empresa, Entrega, LancamentoXP, Usuario
 
 
 def avaliar_url(entrega):
     return f'/api/empresa/submissoes/{entrega.id}/avaliar/'
 
 
-def test_aprovar_concede_xp_e_sobe_nivel(api_client, usuario_empresa, inscrito, projeto):
-    inscrito.xp_total = 900
-    inscrito.save()
+def xp_por_avaliacao(usuario):
+    return list(LancamentoXP.objects.filter(usuario=usuario, origem='avaliacao_recebida').values_list('xp', flat=True))
+
+
+def test_aprovar_registra_a_aprovacao_e_a_atividade(api_client, usuario_empresa, inscrito, projeto):
     entrega = Entrega.objects.create(usuario=inscrito, etapa=projeto.etapas.first())
 
     api_client.force_authenticate(usuario_empresa)
     resp = api_client.patch(avaliar_url(entrega), {'status': 'aprovado'})
 
     assert resp.status_code == 200
-    inscrito.refresh_from_db()
-    assert inscrito.xp_total == 1150
-    assert inscrito.nivel == 2
-    assert inscrito.taxa_sucesso == 100.0
+    entrega.refresh_from_db()
+    assert entrega.status == 'aprovado'
+    # a aprovação não dá XP de competência; receber avaliação conta como atividade
+    assert xp_por_avaliacao(inscrito) == [20]
 
 
 def test_reprovar_nao_concede_xp(api_client, usuario_empresa, inscrito, projeto):
@@ -32,8 +34,20 @@ def test_reprovar_nao_concede_xp(api_client, usuario_empresa, inscrito, projeto)
     entrega.refresh_from_db()
     assert entrega.status == 'reprovado'
     assert entrega.feedback_validacao == 'Faltou o README'
-    inscrito.refresh_from_db()
-    assert inscrito.xp_total == 0
+    # reprovada também conta como atividade: o aluno entregou algo avaliável
+    assert xp_por_avaliacao(inscrito) == [20]
+
+
+def test_avaliacao_conta_atividade_uma_vez_por_desafio(api_client, usuario_empresa, inscrito, projeto):
+    etapa = projeto.etapas.first()
+    primeira = Entrega.objects.create(usuario=inscrito, etapa=etapa)
+    segunda = Entrega.objects.create(usuario=inscrito, etapa=etapa)
+
+    api_client.force_authenticate(usuario_empresa)
+    api_client.patch(avaliar_url(primeira), {'status': 'reprovado'})
+    api_client.patch(avaliar_url(segunda), {'status': 'aprovado'})
+
+    assert xp_por_avaliacao(inscrito) == [20]
 
 
 def test_outra_empresa_nao_pode_avaliar(api_client, inscrito, projeto):
@@ -53,15 +67,16 @@ def test_outra_empresa_nao_pode_avaliar(api_client, inscrito, projeto):
 
 def test_entrega_aprovada_nao_pode_ser_reavaliada(api_client, usuario_empresa, inscrito, projeto):
     entrega = Entrega.objects.create(
-        usuario=inscrito, etapa=projeto.etapas.first(), status='aprovado', xp_ganho=250,
+        usuario=inscrito, etapa=projeto.etapas.first(), status='aprovado',
     )
 
     api_client.force_authenticate(usuario_empresa)
-    resp = api_client.patch(avaliar_url(entrega), {'status': 'aprovado'})
+    resp = api_client.patch(avaliar_url(entrega), {'status': 'reprovado'})
 
     assert resp.status_code == 409
-    inscrito.refresh_from_db()
-    assert inscrito.xp_total == 0  # não concedeu XP de novo
+    entrega.refresh_from_db()
+    assert entrega.status == 'aprovado'
+    assert xp_por_avaliacao(inscrito) == []
 
 
 def test_status_invalido_retorna_400(api_client, usuario_empresa, inscrito, projeto):

@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import api from '../api';
+import { renderComRotas } from '../test/renderComRotas';
 import CompanyDashboard from './CompanyDashboard';
 
 vi.mock('../api', () => ({ default: { get: vi.fn() } }));
@@ -23,7 +23,7 @@ beforeEach(() => {
 
 describe('CompanyDashboard', () => {
   it('mostra a empresa e as estatísticas', async () => {
-    render(<CompanyDashboard onNavigate={vi.fn()} />);
+    renderComRotas(<CompanyDashboard />);
 
     expect(await screen.findByRole('heading', { name: 'TechBR' })).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith('/empresa/dashboard/');
@@ -31,32 +31,24 @@ describe('CompanyDashboard', () => {
     expect(screen.getByText('2 aguardando avaliação')).toBeInTheDocument();
   });
 
-  it('ações rápidas levam às telas certas', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    render(<CompanyDashboard onNavigate={onNavigate} />);
+  it('ações rápidas são links para as telas certas (acessíveis pelo teclado)', async () => {
+    renderComRotas(<CompanyDashboard />);
 
-    await user.click(await screen.findByText('Avaliar Submissões'));
-    expect(onNavigate).toHaveBeenCalledWith('company-submissoes');
-
-    await user.click(screen.getByText('Gerenciar Desafios'));
-    expect(onNavigate).toHaveBeenCalledWith('company-desafios');
+    expect(await screen.findByRole('link', { name: /Avaliar Submissões/ })).toHaveAttribute('href', '/empresa/submissoes');
+    expect(screen.getByRole('link', { name: /Gerenciar Desafios/ })).toHaveAttribute('href', '/empresa/desafios');
   });
 
-  it('ação desabilitada ("Em breve") não navega', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    render(<CompanyDashboard onNavigate={onNavigate} />);
+  it('ação desabilitada ("Em breve") não é um link', async () => {
+    renderComRotas(<CompanyDashboard />);
 
-    await user.click(await screen.findByText('Ver Resultados'));
-
-    expect(onNavigate).not.toHaveBeenCalled();
+    await screen.findByText('Ver Resultados');
+    expect(screen.queryByRole('link', { name: /Ver Resultados/ })).not.toBeInTheDocument();
   });
 
   it('mostra erro se as estatísticas não carregarem', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     api.get.mockRejectedValue(new Error('offline'));
-    render(<CompanyDashboard onNavigate={vi.fn()} />);
+    renderComRotas(<CompanyDashboard />);
 
     expect(await screen.findByText('Erro ao carregar dashboard')).toBeInTheDocument();
   });
