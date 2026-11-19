@@ -92,7 +92,7 @@ describe('PerfilAlunoPage', () => {
     abrirComoEmpresa();
 
     const atividade = await screen.findByRole('region', { name: 'Atividade no semestre' });
-    expect(within(atividade).getByText('565 XP')).toBeInTheDocument();
+    expect(atividade).toHaveTextContent('565 XP');
     expect(within(atividade).getByText('Muito ativo')).toBeInTheDocument();
     expect(within(atividade).getByRole('img', { name: /XP por semana/ })).toBeInTheDocument();
     expect(within(atividade).getByText(/1º semestre de 2026 \(620 XP · Muito ativo\)/)).toBeInTheDocument();
@@ -132,5 +132,37 @@ describe('PerfilAlunoPage', () => {
     abrirComoEmpresa();
 
     expect(await screen.findByText('Não foi possível carregar o perfil.')).toBeInTheDocument();
+  });
+
+  it('id que não é número (ex.: caminho forjado) não chama a API', async () => {
+    abrirComoEmpresa('..%2Fempresa%2Fsubmissoes');
+
+    expect(await screen.findByText('Perfil não encontrado.')).toBeInTheDocument();
+    expect(api.get).not.toHaveBeenCalled();
+  });
+
+  it('a empresa vê os certificados do aluno como ele escreveu', async () => {
+    api.get.mockResolvedValue({ data: { ...ALUNO, perfil: { ...ALUNO.perfil, certificados: 'AWS Cloud Practitioner\nScrum Foundation' } } });
+    abrirComoEmpresa();
+
+    const secao = await screen.findByRole('region', { name: 'Certificados' });
+    const itens = within(secao).getAllByRole('listitem');
+    expect(itens).toHaveLength(2);
+    expect(itens[0]).toHaveTextContent('AWS Cloud Practitioner');
+    expect(itens[1]).toHaveTextContent('Scrum Foundation');
+  });
+
+  it('sem certificados, a empresa não vê a seção', async () => {
+    abrirComoEmpresa();
+    await screen.findByRole('heading', { name: 'ana souza' });
+    expect(screen.queryByRole('region', { name: 'Certificados' })).not.toBeInTheDocument();
+  });
+
+  it('o próprio aluno sem certificados vê o convite para preencher', async () => {
+    api.get.mockResolvedValue({ data: { ...ALUNO, proprio: true } });
+    renderComRotas(<PerfilAlunoPage alunoId={3} />, { rota: '/perfil' });
+
+    const secao = await screen.findByRole('region', { name: 'Certificados' });
+    expect(secao).toHaveTextContent('Conte quais cursos e certificações você já concluiu');
   });
 });

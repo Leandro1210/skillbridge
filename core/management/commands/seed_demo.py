@@ -93,7 +93,7 @@ class Command(BaseCommand):
         """
         projetos_data = [
             {
-                'empresa': 'TechBR', 'status': 'publicado', 'periodo_recomendado': 3, 'dificuldade': 'facil',
+                'empresa': 'TechBR', 'status': 'publicado', 'periodo_recomendado': 3, 'dificuldade': 'iniciante',
                 'vaga_titulo': 'Estagio em Desenvolvimento Back-end',
                 'vaga_modalidade': 'remoto',
                 'vaga_descricao': 'Voce vai apoiar o time na construcao e manutencao das APIs do nosso produto SaaS, '
@@ -107,7 +107,7 @@ class Command(BaseCommand):
                              'listagem e permissao; README explicando como rodar o projeto.',
             },
             {
-                'empresa': 'WebFactory', 'status': 'publicado', 'periodo_recomendado': 4, 'dificuldade': 'medio',
+                'empresa': 'WebFactory', 'status': 'publicado', 'periodo_recomendado': 4, 'dificuldade': 'intermediario',
                 'vaga_titulo': 'Estagio em Front-end',
                 'vaga_modalidade': 'hibrido',
                 'vaga_descricao': 'Agencia digital procura estagiario para desenvolver interfaces de clientes, '
@@ -121,7 +121,7 @@ class Command(BaseCommand):
                              'tratamento de erro e de carregamento.',
             },
             {
-                'empresa': 'DataCorp', 'status': 'publicado', 'periodo_recomendado': 6, 'dificuldade': 'dificil',
+                'empresa': 'DataCorp', 'status': 'publicado', 'periodo_recomendado': 6, 'dificuldade': 'avancado',
                 'vaga_titulo': 'Desenvolvedor Back-end Junior',
                 'vaga_modalidade': 'presencial',
                 'vaga_descricao': 'Consultoria de dados busca desenvolvedor junior para atuar em servicos que '
@@ -135,7 +135,7 @@ class Command(BaseCommand):
                              'documentacao da arquitetura.',
             },
             {
-                'empresa': 'WebFactory', 'status': 'publicado', 'periodo_recomendado': 5, 'dificuldade': 'medio',
+                'empresa': 'WebFactory', 'status': 'publicado', 'periodo_recomendado': 5, 'dificuldade': 'intermediario',
                 'vaga_titulo': 'Estagio em Desenvolvimento Mobile',
                 'vaga_modalidade': 'remoto',
                 'vaga_descricao': 'Participe do desenvolvimento de apps para clientes de varejo, do prototipo a '
@@ -147,7 +147,7 @@ class Command(BaseCommand):
                 'criterios': 'Adicionar, marcar e remover itens; foto pela camera; dados persistem ao fechar o app.',
             },
             {
-                'empresa': 'DataCorp', 'status': 'publicado', 'periodo_recomendado': 6, 'dificuldade': 'dificil',
+                'empresa': 'DataCorp', 'status': 'publicado', 'periodo_recomendado': 6, 'dificuldade': 'avancado',
                 'vaga_titulo': 'Estagio em Engenharia de Dados',
                 'vaga_modalidade': 'hibrido',
                 'vaga_descricao': 'Apoie o time na construcao de pipelines de dados para clientes do setor financeiro.',
@@ -158,7 +158,7 @@ class Command(BaseCommand):
                 'criterios': 'DAG agendada no Airflow; tratamento de dados faltantes; carga idempotente no banco.',
             },
             {
-                'empresa': 'TechBR', 'status': 'rascunho', 'periodo_recomendado': None, 'dificuldade': 'facil',
+                'empresa': 'TechBR', 'status': 'rascunho', 'periodo_recomendado': None, 'dificuldade': 'iniciante',
                 'vaga_titulo': 'Estagio em Design de Interfaces',
                 'vaga_modalidade': 'remoto',
                 'vaga_descricao': 'Vaga em preparacao.',

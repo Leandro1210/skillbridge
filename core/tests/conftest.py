@@ -52,7 +52,7 @@ def projeto(empresa):
         empresa=empresa, vaga_titulo='Estágio Back-end', vaga_modalidade='remoto',
         vaga_descricao='Apoio no desenvolvimento das APIs.', vaga_tecnologias='Python, SQL',
         titulo='API REST', descricao='...', ferramentas='Python, Django',
-        dificuldade='medio', status='publicado', publicado_em=timezone.now(),
+        dificuldade='intermediario', status='publicado', publicado_em=timezone.now(),
     )
     Etapa.objects.create(projeto=projeto, ordem=1, descricao='Etapa 1', criterios_tecnicos='...')
     return projeto

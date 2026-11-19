@@ -82,7 +82,7 @@ class PerfilUsuarioSerializer(serializers.ModelSerializer):
             'bio', 'titulo', 'portfolio_url',
             'instituicao_ensino', 'tecnologias', 'descricao_adicional',
             'curso', 'periodo_atual', 'estudando_atualmente',
-            'github_url', 'linkedin_url', 'mostrar_atividade',
+            'github_url', 'linkedin_url', 'mostrar_atividade', 'certificados',
         ]
 
 

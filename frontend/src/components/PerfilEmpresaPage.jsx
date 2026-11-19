@@ -4,6 +4,7 @@ import api from '../api';
 import { DIFF_LABELS, DIFFICULTY_TONE } from '../lib/difficulty';
 import { listaDeTecnologias } from '../lib/perfil';
 import { tituloDaVaga } from '../lib/vaga';
+import { idDaRota } from '../lib/rotas';
 import { publicadoHa, textoPrazo } from '../lib/datas';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
@@ -11,6 +12,7 @@ import { LinkButton } from './ui/Button';
 import Icon from './ui/Icon';
 import Skeleton from './ui/Skeleton';
 import EmpresaLogo from './ui/EmpresaLogo';
+import Grafismo from './ui/Grafismo';
 
 /**
  * Perfil público da empresa (/empresas/:id): quem ela é, como falar com ela e
@@ -21,11 +23,13 @@ import EmpresaLogo from './ui/EmpresaLogo';
  * não tem essa página) só vê a lista.
  */
 export default function PerfilEmpresaPage({ linkParaDesafios = false }) {
-  const { id } = useParams();
+  const id = idDaRota(useParams().id);
   const [empresa, setEmpresa] = useState(null);
-  const [erro, setErro] = useState('');
+  const [erroDaApi, setErro] = useState('');
+  const erro = id === null ? 'Empresa não encontrada.' : erroDaApi;
 
   useEffect(() => {
+    if (id === null) return undefined;
     let cancelado = false;
     api.get(`/empresas/${id}/`)
       .then(({ data }) => {
@@ -71,14 +75,18 @@ export default function PerfilEmpresaPage({ linkParaDesafios = false }) {
   const encerrados = empresa.desafios.filter((d) => !d.aceita_entregas);
 
   return (
-    <section className="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8 animate-[var(--animate-fade-in)]">
-      <Card padding="lg">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <EmpresaLogo empresa={empresa} tamanho="xl" />
-          <div className="min-w-0 flex-1">
+    <section className="em-sequencia mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
+      <Card padding="none" className="overflow-hidden">
+        {/* capa Azul-noturno com as faixas da marca */}
+        <div className="relative isolate h-28 overflow-hidden bg-brand-navy sm:h-32">
+          <Grafismo variante="ponte" className="absolute right-6 top-1/2 -z-10 h-[84%] -translate-y-1/2" />
+        </div>
+        <div className="flex flex-col gap-5 px-6 pb-7 sm:flex-row sm:items-start sm:px-8">
+          <EmpresaLogo empresa={empresa} tamanho="xl" className="relative z-10 -mt-10 shadow-[var(--shadow-elevation-2)] ring-[5px] ring-surface-container-lowest" />
+          <div className="min-w-0 flex-1 sm:pt-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h1 className="text-headline-medium text-on-surface">{empresa.nome}</h1>
+                <h1 className="text-headline-medium text-on-surface wrap-anywhere">{empresa.nome}</h1>
                 {subtitulo && <p className="mt-0.5 flex items-center gap-1.5 text-body-large text-on-surface-variant"><Icon name="location_on" size="1rem" /> {subtitulo}</p>}
               </div>
               {empresa.propria && (
@@ -95,7 +103,7 @@ export default function PerfilEmpresaPage({ linkParaDesafios = false }) {
                       href={c.href}
                       target={c.href.startsWith('http') ? '_blank' : undefined}
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-[var(--radius-xs)] border border-outline-variant px-2.5 py-1 text-label-medium text-on-surface hover:bg-on-surface/5"
+                      className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-medium text-on-surface transition-colors hover:border-primary/40 hover:bg-primary-container hover:text-primary"
                     >
                       <Icon name={c.icone} size="0.9rem" /> {c.rotulo}
                     </a>
@@ -106,13 +114,14 @@ export default function PerfilEmpresaPage({ linkParaDesafios = false }) {
           </div>
         </div>
 
-        {empresa.descricao && <p className="mt-5 whitespace-pre-wrap leading-relaxed text-on-surface-variant">{empresa.descricao}</p>}
+        <div className="px-6 pb-7 sm:px-8">
+        {empresa.descricao && <p className="whitespace-pre-wrap leading-relaxed text-on-surface-variant">{empresa.descricao}</p>}
         {empresa.descricao_adicional && <p className="mt-3 whitespace-pre-wrap leading-relaxed text-on-surface-variant">{empresa.descricao_adicional}</p>}
 
         {tecnologias.length > 0 && (
           <ul className="mt-5 flex flex-wrap gap-1.5" aria-label="Stack tecnológico">
             {tecnologias.map((t) => (
-              <li key={t} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-1 text-body-small text-on-surface">{t}</li>
+              <li key={t} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-body-small font-medium text-on-surface">{t}</li>
             ))}
           </ul>
         )}
@@ -123,6 +132,7 @@ export default function PerfilEmpresaPage({ linkParaDesafios = false }) {
           <Numero rotulo="Alunos alcançados" valor={numeros.alunos_alcancados} />
           <Numero rotulo="Submissões recebidas" valor={numeros.submissoes} />
         </dl>
+        </div>
       </Card>
 
       <ListaDesafios titulo="Desafios abertos" desafios={abertos} vazio="Nenhum desafio aberto no momento." linkParaDesafios={linkParaDesafios} />
@@ -169,7 +179,7 @@ function ListaDesafios({ titulo, desafios, vazio, linkParaDesafios }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge tone={DIFFICULTY_TONE[d.dificuldade] ?? 'warning'} dot>{DIFF_LABELS[d.dificuldade] ?? 'Médio'}</Badge>
+                  <Badge tone={DIFFICULTY_TONE[d.dificuldade] ?? 'warning'} dot>{DIFF_LABELS[d.dificuldade] ?? 'Intermediário'}</Badge>
                   <Badge tone={d.aceita_entregas ? 'success' : 'neutral'}>{d.aceita_entregas ? 'Aberto' : 'Encerrado'}</Badge>
                 </div>
               </li>

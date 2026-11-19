@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import clsx from 'clsx';
 import api from '../api';
 import { EVENTO_ATIVIDADE, ORIGENS_XP, nomeTemporada, totalPorOrigem } from '../lib/atividade';
 import Card from './ui/Card';
@@ -56,16 +57,18 @@ export default function AtividadeResumo() {
       </p>
 
       <div className="mt-2">
-        <div
-          className="h-2 overflow-hidden rounded-full bg-primary-container"
-          role="progressbar"
+        {/* <progress> nativo, com a aparência do navegador trocada pela do tema */}
+        <progress
+          className={clsx(
+            'block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-primary-container',
+            '[&::-webkit-progress-bar]:bg-primary-container',
+            '[&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary',
+            '[&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-primary',
+          )}
           aria-label={proximo ? `Progresso até ${proximo.nome}` : 'Nível máximo de atividade'}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progresso * 100)}
-        >
-          <div className="h-full rounded-full bg-primary" style={{ width: `${progresso * 100}%` }} />
-        </div>
+          max={100}
+          value={Math.round(progresso * 100)}
+        />
         <p className="mt-1.5 text-body-small text-on-surface-variant">
           {proximo
             ? `Faltam ${proximo.xp_faltante} XP para "${proximo.nome}"`

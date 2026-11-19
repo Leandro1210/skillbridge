@@ -38,7 +38,7 @@ export function intervaloDaSemana(inicioIso) {
   const inicio = new Date(ano, mes - 1, dia);
   const fim = new Date(ano, mes - 1, dia + 6);
   const curta = (d) => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-  return `${curta(inicio)} – ${curta(fim)}`;
+  return `${curta(inicio)} a ${curta(fim)}`;
 }
 
 /** Evento que o App dispara quando o acesso do dia rende XP — a tela de atividade recarrega. */

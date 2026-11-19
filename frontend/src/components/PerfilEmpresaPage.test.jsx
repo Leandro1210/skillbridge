@@ -14,16 +14,16 @@ const EMPRESA = {
   tecnologias: 'Python, Django, Python', descricao_adicional: 'Mentoria para iniciantes.',
   numeros: { desafios_publicados: 2, desafios_abertos: 1, alunos_alcancados: 12, submissoes: 9 },
   desafios: [
-    { id: 1, titulo: 'API REST', dificuldade: 'medio', status: 'publicado', aceita_entregas: true, prazo: null, publicado_em: null, participantes: 8, submissoes: 6 },
-    { id: 2, titulo: 'App mobile', dificuldade: 'dificil', status: 'encerrado', aceita_entregas: false, prazo: null, publicado_em: null, participantes: 1, submissoes: 1 },
+    { id: 1, titulo: 'API REST', dificuldade: 'intermediario', status: 'publicado', aceita_entregas: true, prazo: null, publicado_em: null, participantes: 8, submissoes: 6 },
+    { id: 2, titulo: 'App mobile', dificuldade: 'avancado', status: 'encerrado', aceita_entregas: false, prazo: null, publicado_em: null, participantes: 1, submissoes: 1 },
   ],
   propria: false,
 };
 
-function abrir({ linkParaDesafios = true } = {}) {
+function abrir({ linkParaDesafios = true, id = 7 } = {}) {
   return renderComRotas(
     <Routes><Route path="/empresas/:id" element={<PerfilEmpresaPage linkParaDesafios={linkParaDesafios} />} /></Routes>,
-    { rota: '/empresas/7' },
+    { rota: `/empresas/${id}` },
   );
 }
 
@@ -98,5 +98,12 @@ describe('PerfilEmpresaPage', () => {
     abrir();
 
     expect(await screen.findByText('Não foi possível carregar o perfil da empresa.')).toBeInTheDocument();
+  });
+
+  it('id que não é número (ex.: caminho forjado) não chama a API', async () => {
+    abrir({ id: '..%2Fempresa%2Fdashboard' });
+
+    expect(await screen.findByText('Empresa não encontrada.')).toBeInTheDocument();
+    expect(api.get).not.toHaveBeenCalled();
   });
 });

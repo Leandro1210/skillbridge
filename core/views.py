@@ -3,6 +3,8 @@ Views da API do core: autenticação, projetos/etapas/entregas (fluxo do
 aluno) e as rotas de empresa (gerenciar desafios, avaliar submissões).
 """
 
+from datetime import datetime, time, timedelta
+
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Exists, F, Min, OuterRef, Q
 from django.utils import timezone
@@ -609,20 +611,53 @@ class EmpresaAvaliarSubmissaoView(generics.UpdateAPIView):
         )
 
 
+SEMANAS_NO_PAINEL = 12
+PENDENTES_NO_PAINEL = 5
+PROCESSOS_NO_PAINEL = 5
+
+# Itens do perfil que o painel lembra a empresa de preencher: (campo, rótulo)
+ITENS_DO_PERFIL_EMPRESA = [
+    ('logo_url', 'Logo'),
+    ('descricao', 'Descrição da empresa'),
+    ('area_atuacao', 'Área de atuação'),
+    ('cidade', 'Cidade'),
+    ('email_contato', 'E-mail de contato'),
+    ('website', 'Site'),
+]
+
+
+def _solucoes_por_semana(submissoes, semanas=SEMANAS_NO_PAINEL):
+    """Soluções recebidas por semana (segunda a domingo), das últimas `semanas`, com zeros."""
+    hoje = timezone.localdate()
+    segunda_inicial = hoje - timedelta(days=hoje.weekday()) - timedelta(weeks=semanas - 1)
+    totais = [0] * semanas
+    desde = timezone.make_aware(datetime.combine(segunda_inicial, time.min))
+    for entregue_em in submissoes.filter(entregue_em__gte=desde).values_list('entregue_em', flat=True):
+        indice = (timezone.localtime(entregue_em).date() - segunda_inicial).days // 7
+        if 0 <= indice < semanas:
+            totais[indice] += 1
+    return [
+        {'inicio': (segunda_inicial + timedelta(weeks=i)).isoformat(), 'total': total}
+        for i, total in enumerate(totais)
+    ]
+
+
 class EmpresaDashboardView(generics.RetrieveAPIView):
     """
     GET /api/empresa/dashboard/
 
-    Retorna estatísticas gerais da empresa:
-    - Total de desafios
-    - Total de submissões
-    - Submissões por status
-    - Estudantes participando
+    Painel da empresa:
+    - números gerais (desafios por status, soluções por status, candidatos);
+    - soluções recebidas por semana (últimas 12 semanas);
+    - a fila de soluções aguardando avaliação (as mais antigas primeiro);
+    - os processos abertos com o funil participantes → soluções → aprovados;
+    - o que falta preencher no perfil da empresa.
     """
     permission_classes = [permissions.IsAuthenticated, IsCompanyUser]
 
     def retrieve(self, request, *args, **kwargs):
         empresa = request.user.empresa
+        perfil, _ = PerfilEmpresa.objects.get_or_create(empresa=empresa)
 
         projetos = Projeto.objects.filter(empresa=empresa)
         submissoes = Entrega.objects.filter(etapa__projeto__empresa=empresa)
@@ -630,13 +665,32 @@ class EmpresaDashboardView(generics.RetrieveAPIView):
         proj_stats = projetos.aggregate(
             total_desafios=Count('id'),
             desafios_ativos=Count('id', filter=Q(status=StatusDesafio.PUBLICADO)),
+            desafios_rascunho=Count('id', filter=Q(status=StatusDesafio.RASCUNHO)),
+            desafios_encerrados=Count('id', filter=Q(status=StatusDesafio.ENCERRADO)),
         )
         sub_stats = submissoes.aggregate(
             total_submissoes=Count('id'),
             submissoes_pendentes=Count('id', filter=Q(status=StatusEntrega.PENDENTE)),
             submissoes_aprovadas=Count('id', filter=Q(status=StatusEntrega.APROVADO)),
             submissoes_reprovadas=Count('id', filter=Q(status=StatusEntrega.REPROVADO)),
+            submissoes_ultimos_7_dias=Count('id', filter=Q(entregue_em__gte=timezone.now() - timedelta(days=7))),
             estudantes_unicos=Count('usuario', distinct=True),
+        )
+
+        pendentes = (
+            submissoes.filter(status=StatusEntrega.PENDENTE)
+            .select_related('usuario', 'etapa__projeto')
+            .order_by('entregue_em')[:PENDENTES_NO_PAINEL]
+        )
+        processos = (
+            projetos.filter(status=StatusDesafio.PUBLICADO)
+            .annotate(
+                **numeros_do_desafio(),
+                num_pendentes=Count(
+                    'etapas__entregas', filter=Q(etapas__entregas__status=StatusEntrega.PENDENTE), distinct=True,
+                ),
+            )
+            .order_by('-publicado_em', '-created_at')[:PROCESSOS_NO_PAINEL]
         )
 
         data = {
@@ -644,9 +698,39 @@ class EmpresaDashboardView(generics.RetrieveAPIView):
                 'id': empresa.id,
                 'nome': empresa.nome,
                 'setor': empresa.setor,
+                'area_atuacao': perfil.area_atuacao,
+                'cidade': perfil.cidade,
+                'logo_url': perfil.logo_url,
             },
             **proj_stats,
             **sub_stats,
+            'serie_semanal': _solucoes_por_semana(submissoes),
+            'pendentes': [
+                {
+                    'id': e.id,
+                    'candidato': {'id': e.usuario_id, 'nome': e.usuario.nome or e.usuario.email},
+                    'desafio': {
+                        'id': e.etapa.projeto_id,
+                        'titulo': e.etapa.projeto.titulo,
+                        'vaga_titulo': e.etapa.projeto.vaga_titulo,
+                    },
+                    'entregue_em': e.entregue_em,
+                }
+                for e in pendentes
+            ],
+            'processos': [
+                {
+                    'id': p.id, 'vaga_titulo': p.vaga_titulo, 'titulo': p.titulo, 'prazo': p.prazo,
+                    'aceita_entregas': p.aceita_entregas,
+                    'participantes': p.num_participantes, 'submissoes': p.num_submissoes,
+                    'aprovados': p.num_aprovados, 'pendentes': p.num_pendentes,
+                }
+                for p in processos
+            ],
+            'perfil_pendente': [
+                rotulo for campo, rotulo in ITENS_DO_PERFIL_EMPRESA
+                if not (getattr(empresa, campo) if campo == 'descricao' else getattr(perfil, campo))
+            ],
         }
 
         return Response(data)

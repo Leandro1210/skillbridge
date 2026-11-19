@@ -15,7 +15,7 @@ describe('vocabulário do XP de atividade', () => {
   });
 
   it('intervaloDaSemana vai de segunda a domingo, atravessando o mês', () => {
-    expect(intervaloDaSemana('2026-06-29')).toBe('29/06 – 05/07');
+    expect(intervaloDaSemana('2026-06-29')).toBe('29/06 a 05/07');
   });
 
   it('totalPorOrigem soma a temporada e ordena do maior para o menor', () => {

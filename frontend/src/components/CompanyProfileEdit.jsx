@@ -53,7 +53,8 @@ export default function CompanyProfileEdit() {
     e.preventDefault();
     try {
       setSaving(true);
-      const { empresa_id: _ignorado, ...dados } = perfil; // somente leitura
+      const dados = { ...perfil };
+      delete dados.empresa_id; // somente leitura
       await api.patch('/perfil/empresa/', dados);
       setSuccess('Perfil da empresa atualizado com sucesso!');
       setError('');
@@ -96,9 +97,9 @@ export default function CompanyProfileEdit() {
         </div>
       )}
       {success && (
-        <div role="status" className="mb-6 rounded-[var(--radius-sm)] border border-primary/40 bg-primary-container/25 p-4 text-primary">
-          <p className="font-medium">{success}</p>
-        </div>
+        <output className="mb-6 block rounded-[var(--radius-sm)] border border-primary/40 bg-primary-container/25 p-4 font-medium text-primary">
+          {success}
+        </output>
       )}
 
       <Card padding="lg" className="animate-[var(--animate-rise)]">
@@ -108,7 +109,7 @@ export default function CompanyProfileEdit() {
             <Input label="Nome da empresa" name="nome" value={perfil.nome} onChange={alterar} required />
             <Input label="Setor" name="setor" value={perfil.setor} onChange={alterar} required placeholder="Ex: Tecnologia" />
             <Input label="Área de Atuação" name="area_atuacao" value={perfil.area_atuacao} onChange={alterar} placeholder="Ex: SaaS, Fintech, E-commerce, Educação" />
-            <Input label="Cidade" name="cidade" value={perfil.cidade} onChange={alterar} placeholder='Ex: Anápolis, GO — ou "Remoto"' />
+            <Input label="Cidade" name="cidade" value={perfil.cidade} onChange={alterar} placeholder='Ex.: Anápolis, GO ou Remoto' />
           </div>
           <Textarea label="Apresentação" name="descricao" value={perfil.descricao} onChange={alterar} rows={3} placeholder="O que a empresa faz, em poucas linhas." />
           <Textarea

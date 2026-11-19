@@ -5,6 +5,7 @@ import { DIFF_LABELS, DIFFICULTY_TONE } from '../lib/difficulty';
 import { dataCurta, publicadoHa, textoPrazo } from '../lib/datas';
 import { listaDeTecnologias } from '../lib/perfil';
 import { MODALIDADES, tituloDaVaga } from '../lib/vaga';
+import { idDaRota } from '../lib/rotas';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
@@ -19,7 +20,7 @@ import ProjectWorkspace from './ProjectWorkspace';
  * para mostrar que sabe). Quem já participa vê também a área de envio.
  */
 export default function DesafioPage() {
-  const { id } = useParams();
+  const id = idDaRota(useParams().id);
   const [desafio, setDesafio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
@@ -28,6 +29,11 @@ export default function DesafioPage() {
   const [erroParticipar, setErroParticipar] = useState('');
 
   const carregar = useCallback(async () => {
+    if (id === null) {
+      setNaoEncontrado(true);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data } = await api.get(`/projetos/${id}/`);
@@ -136,7 +142,7 @@ export default function DesafioPage() {
                 <h3 className="mb-1.5 text-label-medium text-on-surface-variant">O que a empresa espera que você saiba</h3>
                 <ul className="flex flex-wrap gap-1.5" aria-label="Tecnologias esperadas">
                   {tecnologiasVaga.map((t) => (
-                    <li key={t} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-1 text-body-small text-on-surface">{t}</li>
+                    <li key={t} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-body-small font-medium text-on-surface">{t}</li>
                   ))}
                 </ul>
               </div>
@@ -153,7 +159,7 @@ export default function DesafioPage() {
         <h1 id="titulo-desafio" className="mt-1 text-headline-medium text-on-surface">{desafio.titulo}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Badge tone={DIFFICULTY_TONE[desafio.dificuldade] ?? 'warning'} dot>
-            {DIFF_LABELS[desafio.dificuldade] ?? 'Médio'}
+            {DIFF_LABELS[desafio.dificuldade] ?? 'Intermediário'}
           </Badge>
           {desafio.status === 'encerrado' && <Badge tone="error">Encerrado</Badge>}
         </div>
@@ -165,7 +171,7 @@ export default function DesafioPage() {
             <h2 className="mb-2 text-body-small font-semibold uppercase tracking-wide text-on-surface-variant/70">Ferramentas do desafio</h2>
             <ul className="flex flex-wrap gap-2" aria-label="Ferramentas do desafio">
               {ferramentas.map((f) => (
-                <li key={f} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-1 text-body-small text-on-surface">{f}</li>
+                <li key={f} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-body-small font-medium text-on-surface">{f}</li>
               ))}
             </ul>
           </div>

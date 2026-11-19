@@ -34,7 +34,7 @@ def test_criar_desafio_vincula_empresa_e_gera_etapa(api_client, usuario_empresa)
     api_client.force_authenticate(usuario_empresa)
     resp = api_client.post(DESAFIOS_URL, {
         **VAGA, 'vaga_modalidade': 'hibrido',
-        'titulo': 'Novo desafio', 'descricao': '...', 'ferramentas': 'Python', 'dificuldade': 'facil',
+        'titulo': 'Novo desafio', 'descricao': '...', 'ferramentas': 'Python', 'dificuldade': 'iniciante',
     })
 
     assert resp.status_code == 201

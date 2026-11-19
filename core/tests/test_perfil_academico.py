@@ -240,3 +240,26 @@ def test_submissoes_da_empresa_trazem_candidato_etapa_e_desafio(api_client, usua
     assert item['usuario'] == {'id': inscrito.id, 'nome': 'Aluno Teste', 'email': 'aluno@teste.com'}
     assert item['etapa'] == {'id': etapa.id, 'ordem': 1, 'descricao': 'Etapa 1'}
     assert item['desafio'] == {'id': projeto.id, 'titulo': 'API REST'}
+
+
+# Certificados (texto livre do aluno)
+
+def test_aluno_descreve_os_certificados_em_texto_livre(api_client, estudante):
+    api_client.force_authenticate(estudante)
+    texto = 'AWS Cloud Practitioner (2026)\nPython Avançado, Senai, 60h'
+
+    resp = api_client.patch(PERFIL_URL, {'certificados': texto})
+
+    assert resp.status_code == 200
+    estudante.perfil.refresh_from_db()
+    assert estudante.perfil.certificados == texto
+
+
+def test_certificados_aparecem_no_perfil_publico(api_client, usuario_empresa, estudante):
+    estudante.perfil.certificados = 'Scrum Foundation'
+    estudante.perfil.save()
+    api_client.force_authenticate(usuario_empresa)
+
+    resp = api_client.get(aluno_url(estudante))
+
+    assert resp.data['perfil']['certificados'] == 'Scrum Foundation'

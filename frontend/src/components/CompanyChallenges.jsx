@@ -9,7 +9,6 @@ import Button from './ui/Button';
 import Icon from './ui/Icon';
 import Skeleton from './ui/Skeleton';
 import PageHeader from './ui/PageHeader';
-import Fab from './ui/Fab';
 import { Input, Textarea, Select } from './ui/Input';
 
 const EMPTY_FORM = {
@@ -20,7 +19,7 @@ const EMPTY_FORM = {
   titulo: '',
   descricao: '',
   ferramentas: '',
-  dificuldade: 'medio',
+  dificuldade: 'intermediario',
   prazo: '',
   periodo_recomendado: '',
 };
@@ -164,16 +163,12 @@ export default function CompanyChallenges() {
       <PageHeader
         title="Meus Desafios"
         description="Crie e gerencie os desafios técnicos para avaliação de candidatos."
+        actions={!showForm && (
+          <Button onClick={() => setShowForm(true)}>
+            <Icon name="add" size="1.15rem" /> Novo Desafio
+          </Button>
+        )}
       />
-
-      {!showForm && (
-        <Fab
-          icon="add"
-          label="Novo Desafio"
-          className="bottom-24 right-6 lg:bottom-6"
-          onClick={() => setShowForm(true)}
-        />
-      )}
 
       {error && (
         <Card variant="outlined" padding="sm" className="mb-6 border-error/40 bg-error-container/20">
@@ -268,13 +263,13 @@ export default function CompanyChallenges() {
                   placeholder="React, Node.js, MongoDB"
                 />
                 <Select
-                  label="Dificuldade"
+                  label="Nível"
                   value={formData.dificuldade}
                   onChange={(e) => setFormData({ ...formData, dificuldade: e.target.value })}
                 >
-                  <option value="facil">Fácil</option>
-                  <option value="medio">Médio</option>
-                  <option value="dificil">Difícil</option>
+                  {Object.entries(DIFF_LABELS).map(([valor, rotulo]) => (
+                    <option key={valor} value={valor}>{rotulo}</option>
+                  ))}
                 </Select>
                 <Input
                   type="date"
@@ -295,7 +290,7 @@ export default function CompanyChallenges() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="em-sequencia grid grid-cols-1 gap-6 md:grid-cols-2">
         {challenges.map((challenge) => {
           const label = DIFF_LABELS[challenge.dificuldade] ?? challenge.dificuldade;
           const tone = DIFFICULTY_TONE[challenge.dificuldade] ?? 'warning';
@@ -304,11 +299,11 @@ export default function CompanyChallenges() {
           return (
             <Card key={challenge.id} padding="lg" hoverable className="flex flex-col">
               <div className="mb-4 flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="line-clamp-1 text-title-large text-on-surface" title={tituloDaVaga(challenge)}>
+                <div className="min-w-0">
+                  <h3 className="text-title-large text-on-surface wrap-anywhere">
                     {tituloDaVaga(challenge)}
                   </h3>
-                  <p className="mb-2 mt-0.5 text-body-small text-on-surface-variant">
+                  <p className="mb-2 mt-0.5 text-body-small text-on-surface-variant wrap-anywhere">
                     Desafio: <span className="font-medium text-on-surface">{challenge.titulo}</span>
                     {challenge.vaga_modalidade && ` · ${MODALIDADES[challenge.vaga_modalidade] ?? challenge.vaga_modalidade}`}
                   </p>
@@ -325,7 +320,7 @@ export default function CompanyChallenges() {
                 </Badge>
               </div>
 
-              <p className="mb-4 flex-1 line-clamp-3 text-body-medium text-on-surface-variant">
+              <p className="mb-4 flex-1 text-body-medium text-on-surface-variant wrap-anywhere">
                 {challenge.vaga_descricao || challenge.descricao}
               </p>
 
@@ -338,7 +333,7 @@ export default function CompanyChallenges() {
               {challenge.ferramentas && (
                 <div className="mb-5 flex flex-wrap gap-1.5">
                   {[...new Set(challenge.ferramentas.split(',').map((f) => f.trim()).filter(Boolean))].map((ferramenta) => (
-                    <span key={ferramenta} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2.5 py-0.5 text-body-small text-on-surface-variant">
+                    <span key={ferramenta} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-body-small font-medium text-on-surface">
                       {ferramenta}
                     </span>
                   ))}

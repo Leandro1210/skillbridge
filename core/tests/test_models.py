@@ -45,7 +45,7 @@ def test_representacao_em_texto_dos_models(estudante, empresa, projeto):
     assert str(estudante.perfil) == 'Perfil de Aluno Teste'
     assert str(empresa) == 'TechBR'
     assert str(PerfilEmpresa.objects.create(empresa=empresa)) == 'Perfil de TechBR'
-    assert str(projeto) == 'API REST [Médio]'
+    assert str(projeto) == 'API REST [Intermediário]'
     assert str(etapa) == 'API REST — Etapa 1'
     assert str(Inscricao.objects.create(usuario=estudante, projeto=projeto)) == 'Aluno Teste -> API REST [Em Andamento]'
     assert str(Entrega.objects.create(usuario=estudante, etapa=etapa)) == 'Aluno Teste → API REST — Etapa 1 [Pendente]'

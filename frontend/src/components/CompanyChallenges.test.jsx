@@ -10,19 +10,19 @@ const ATIVO = {
   id: 1, vaga_titulo: 'Estágio Back-end', vaga_modalidade: 'remoto', vaga_descricao: 'Apoio nas APIs do produto.',
   vaga_tecnologias: 'Python, SQL',
   titulo: 'API REST', descricao: 'Construa uma API', ferramentas: 'Python, Django, Python',
-  dificuldade: 'medio', status: 'publicado', prazo: null, periodo_recomendado: 4,
+  dificuldade: 'intermediario', status: 'publicado', prazo: null, periodo_recomendado: 4,
   participantes: 8, submissoes: 6, aprovados: 2,
 };
 const RASCUNHO = {
   id: 2, vaga_titulo: 'Estágio Front-end', vaga_modalidade: '', vaga_descricao: 'Telas responsivas.', vaga_tecnologias: 'CSS',
   titulo: 'Landing page', descricao: 'HTML e CSS', ferramentas: 'HTML',
-  dificuldade: 'facil', status: 'rascunho', prazo: null, periodo_recomendado: null,
+  dificuldade: 'iniciante', status: 'rascunho', prazo: null, periodo_recomendado: null,
 };
 // desafio antigo, de antes da separação vaga/desafio: sem vaga
 const ENCERRADO = {
   id: 3, vaga_titulo: '', vaga_modalidade: '', vaga_descricao: '', vaga_tecnologias: '',
   titulo: 'App mobile', descricao: 'React Native', ferramentas: 'React Native',
-  dificuldade: 'dificil', status: 'encerrado', prazo: null, periodo_recomendado: null,
+  dificuldade: 'avancado', status: 'encerrado', prazo: null, periodo_recomendado: null,
 };
 
 beforeEach(() => {
@@ -98,7 +98,7 @@ describe('CompanyChallenges', () => {
       titulo: 'Desafio novo',
       descricao: 'Descrição',
       ferramentas: '',
-      dificuldade: 'medio',
+      dificuldade: 'intermediario',
       prazo: null, // opcionais vazios vão como null, não como ''
       periodo_recomendado: null,
     });

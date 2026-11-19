@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 
 const PADDING = {
+  none: '',
   sm: 'p-4',
   md: 'p-6',
   lg: 'p-8',
@@ -11,15 +12,16 @@ const PADDING = {
  *  levemente azulada: é o contraste de superfície que o destaca, com a
  *  sombra como reforço. */
 const VARIANTS = {
-  elevated: 'bg-surface-container-lowest shadow-[var(--shadow-elevation-1)]',
+  elevated: 'bg-surface-container-lowest border border-outline-variant/70 shadow-[var(--shadow-elevation-1)]',
   filled: 'bg-surface-container',
   outlined: 'bg-surface-container-lowest border border-outline-variant',
 };
 
+// Ao passar o mouse o cartão sobe um pouco e ganha sombra: sinal de que é clicável
 const HOVER = {
-  elevated: 'hover:shadow-[var(--shadow-elevation-2)]',
+  elevated: 'hover:border-primary/25 hover:shadow-[var(--shadow-elevation-2)]',
   filled: 'hover:bg-surface-container-high',
-  outlined: 'hover:border-outline hover:shadow-[var(--shadow-elevation-1)]',
+  outlined: 'hover:border-primary/30 hover:shadow-[var(--shadow-elevation-1)]',
 };
 
 export default function Card({
@@ -35,10 +37,10 @@ export default function Card({
   return (
     <Tag
       className={clsx(
-        'rounded-[var(--radius-lg)] transition-all duration-200',
+        'rounded-[var(--radius-lg)] transition-all duration-300 ease-[var(--ease-brand)]',
         VARIANTS[variant],
         PADDING[padding],
-        hoverable && ['cursor-pointer hover:-translate-y-0.5', HOVER[variant]],
+        hoverable && ['hover:-translate-y-1', HOVER[variant]],
         className,
       )}
       {...rest}

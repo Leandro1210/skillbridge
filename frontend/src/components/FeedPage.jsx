@@ -10,7 +10,7 @@ import Badge from './ui/Badge';
 import { LinkButton } from './ui/Button';
 import Icon from './ui/Icon';
 import Skeleton from './ui/Skeleton';
-import PageHeader from './ui/PageHeader';
+import Grafismo from './ui/Grafismo';
 import { Input, Select } from './ui/Input';
 import AtividadeResumo from './AtividadeResumo';
 import EmpresaLogo from './ui/EmpresaLogo';
@@ -68,11 +68,16 @@ export default function FeedPage() {
   const filtrando = Object.keys(filtros).length > 0;
 
   return (
-    <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 animate-[var(--animate-fade-in)]">
-      <PageHeader
-        title="Oportunidades"
-        description="Vagas reais de empresas, cada uma com um desafio para você mostrar o que sabe fazer."
-      />
+    <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      {/* Destaque da página: Azul Bridge com as faixas da marca */}
+      <header className="relative isolate mb-8 overflow-hidden rounded-[var(--radius-xl)] bg-brand-blue px-6 py-8 text-white shadow-[var(--shadow-brand)] sm:px-8 sm:py-10">
+        <Grafismo variante="trilhas" tom="azul" className="absolute right-4 top-4 -z-10 h-16 sm:right-6 sm:top-1/2 sm:h-[78%] sm:-translate-y-1/2" />
+        <p className="text-label-medium uppercase tracking-[0.16em] text-white/75">Para estudantes</p>
+        <h1 className="mt-2 text-headline-large text-white">Oportunidades</h1>
+        <p className="mt-2 max-w-sm text-body-large text-white/85">
+          Vagas reais de empresas, cada uma com um desafio para você mostrar o que sabe fazer.
+        </p>
+      </header>
 
       <AtividadeResumo />
 
@@ -91,7 +96,7 @@ export default function FeedPage() {
         </div>
         <div className="sm:w-44">
           <Select
-            label="Dificuldade"
+            label="Nível"
             className="h-12"
             value={dificuldade}
             onChange={(e) => {
@@ -112,7 +117,7 @@ export default function FeedPage() {
         </div>
         <button
           type="submit"
-          className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[var(--radius-full)] border border-outline px-5 text-label-large text-on-surface transition-colors hover:bg-on-surface/5"
+          className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[var(--radius-full)] bg-primary px-6 text-label-large text-on-primary shadow-[var(--shadow-elevation-1)] transition-all duration-300 hover:-translate-y-px hover:shadow-[var(--shadow-brand)] active:scale-[0.97]"
         >
           <Icon name="search" size="1.1rem" /> Buscar
         </button>
@@ -132,8 +137,8 @@ export default function FeedPage() {
       )}
 
       {!loading && !error && desafios.length === 0 && (
-        <Card variant="outlined" padding="lg" className="text-center">
-          <Icon name="explore" size="2.5rem" className="mx-auto mb-3 text-on-surface-variant/50" />
+        <Card variant="outlined" padding="lg" className="text-center animate-[var(--animate-scale-in)]">
+          <Grafismo variante="pontos" tom="vivo" className="mx-auto mb-3 h-24" />
           <p className="font-medium text-on-surface-variant">
             {filtrando ? 'Nenhum desafio encontrado com esses filtros.' : 'Nenhum desafio publicado no momento.'}
           </p>
@@ -144,7 +149,7 @@ export default function FeedPage() {
       )}
 
       {!loading && !error && desafios.length > 0 && (
-        <ol className="space-y-4" aria-label="Desafios publicados">
+        <ol className="em-sequencia space-y-5" aria-label="Desafios publicados">
           {desafios.map((desafio) => (
             <li key={desafio.id}>
               <CartaoDesafio desafio={desafio} />
@@ -163,18 +168,18 @@ function CartaoDesafio({ desafio }) {
   const prazo = textoPrazo(desafio.prazo);
 
   return (
-    <Card as="article" padding="md" className="flex flex-col gap-4">
+    <Card as="article" padding="md" hoverable className="flex flex-col gap-4 sm:p-7">
       <header className="flex items-start gap-3">
         <EmpresaLogo empresa={empresa} />
         <div className="min-w-0 flex-1">
           {empresa ? (
-            <Link to={`/empresas/${empresa.id}`} className="block truncate text-title-small text-on-surface hover:underline">
+            <Link to={`/empresas/${empresa.id}`} className="block text-title-small text-on-surface wrap-anywhere hover:underline">
               {empresa.nome}
             </Link>
           ) : (
-            <p className="truncate text-title-small text-on-surface">Empresa parceira</p>
+            <p className="text-title-small text-on-surface">Empresa parceira</p>
           )}
-          <p className="truncate text-body-small text-on-surface-variant">
+          <p className="text-body-small text-on-surface-variant wrap-anywhere">
             {[empresa?.area_atuacao || empresa?.setor, empresa?.cidade, desafio.publicado_em && `publicado ${publicadoHa(desafio.publicado_em)}`]
               .filter(Boolean)
               .join(' · ')}
@@ -184,10 +189,10 @@ function CartaoDesafio({ desafio }) {
       </header>
 
       <div>
-        <h2 className="text-title-large text-on-surface">{vaga}</h2>
+        <h2 className="text-headline-small text-on-surface wrap-anywhere">{vaga}</h2>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {desafio.vaga_modalidade && (
-            <Badge tone="neutral">
+            <Badge tone="accent">
               <Icon name="work" size="0.95rem" /> {MODALIDADES[desafio.vaga_modalidade] ?? desafio.vaga_modalidade}
             </Badge>
           )}
@@ -195,7 +200,7 @@ function CartaoDesafio({ desafio }) {
             <Badge tone="neutral">A partir do {desafio.periodo_recomendado}º período</Badge>
           )}
         </div>
-        <p className="mt-3 line-clamp-3 text-body-medium leading-relaxed text-on-surface-variant">
+        <p className="mt-3 text-body-medium leading-relaxed text-on-surface-variant wrap-anywhere">
           {desafio.vaga_descricao || desafio.descricao}
         </p>
       </div>
@@ -205,7 +210,7 @@ function CartaoDesafio({ desafio }) {
           <h3 className="mb-1.5 text-label-medium text-on-surface-variant">O que a empresa espera que você saiba</h3>
           <ul className="flex flex-wrap gap-1.5" aria-label="Tecnologias esperadas">
             {tecnologias.map((t) => (
-              <li key={t} className="rounded-[var(--radius-xs)] bg-surface-container-highest px-2 py-1 text-body-small text-on-surface">
+              <li key={t} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-body-small font-medium text-on-surface">
                 {t}
               </li>
             ))}
@@ -214,12 +219,13 @@ function CartaoDesafio({ desafio }) {
       )}
 
       {/* o desafio: o próximo passo para se candidatar */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[var(--radius-md)] bg-surface-container-low px-4 py-3">
-        <Icon name="code_blocks" size="1.1rem" className="text-primary" />
-        <span className="text-body-small text-on-surface-variant">Desafio de seleção:</span>
-        <span className="text-label-large text-on-surface">{desafio.titulo}</span>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-md)] bg-surface-container-low px-4 py-3">
+        <Badge tone="navy">
+          <Icon name="code_blocks" size="0.95rem" /> Desafio de seleção
+        </Badge>
+        <span className="min-w-0 text-label-large text-on-surface wrap-anywhere">{desafio.titulo}</span>
         <Badge tone={DIFFICULTY_TONE[desafio.dificuldade] ?? 'warning'} dot>
-          {DIFF_LABELS[desafio.dificuldade] ?? 'Médio'}
+          {DIFF_LABELS[desafio.dificuldade] ?? 'Intermediário'}
         </Badge>
       </div>
 
@@ -235,8 +241,8 @@ function CartaoDesafio({ desafio }) {
             </span>
           )}
         </p>
-        <LinkButton to={`/desafios/${desafio.id}`} size="sm" aria-label={`Ver desafio da vaga ${vaga}`}>
-          Ver desafio <Icon name="arrow_forward" size="1rem" />
+        <LinkButton to={`/desafios/${desafio.id}`} aria-label={`Ver desafio da vaga ${vaga}`} className="group">
+          Ver desafio <Icon name="arrow_forward" size="1.05rem" className="transition-transform duration-300 group-hover:translate-x-1" />
         </LinkButton>
       </footer>
     </Card>
@@ -254,9 +260,9 @@ function SeusDesafios({ inscricoes }) {
           <li key={insc.id} className="shrink-0">
             <Link
               to={`/desafios/${insc.projeto}`}
-              className="flex max-w-60 flex-col rounded-[var(--radius-md)] border border-outline-variant bg-surface-container-lowest px-4 py-3 transition-colors hover:border-outline"
+              className="flex max-w-60 flex-col rounded-[var(--radius-md)] border border-outline-variant bg-surface-container-lowest px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-elevation-2)]"
             >
-              <span className="truncate text-label-large text-on-surface">{insc.projeto_titulo}</span>
+              <span className="text-label-large text-on-surface wrap-anywhere">{insc.projeto_titulo}</span>
               <span className="text-body-small text-on-surface-variant">
                 {insc.status === 'concluido' ? 'Concluído' : 'Em andamento'}
               </span>

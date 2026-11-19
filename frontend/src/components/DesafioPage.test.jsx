@@ -16,7 +16,7 @@ const DESAFIO = {
   vaga_titulo: 'Estágio Back-end', vaga_modalidade: 'remoto',
   vaga_descricao: 'Apoio no desenvolvimento das APIs do produto.', vaga_tecnologias: 'Python, SQL',
   titulo: 'API REST', descricao: 'Construa uma API com JWT', ferramentas: 'Python, Django',
-  dificuldade: 'medio', periodo_recomendado: 4, prazo: '2030-12-31', publicado_em: null,
+  dificuldade: 'intermediario', periodo_recomendado: 4, prazo: '2030-12-31', publicado_em: null,
   empresa: { id: 7, nome: 'TechBR', setor: 'Tecnologia', area_atuacao: '', cidade: '', logo_url: '' },
   participantes: 3, ja_participa: false, status: 'publicado', aceita_entregas: true,
   etapas: [{ id: 1 }],
@@ -57,7 +57,7 @@ describe('DesafioPage', () => {
 
     const desafio = await screen.findByRole('article', { name: 'API REST' });
     expect(within(desafio).getByText('Desafio de seleção')).toBeInTheDocument();
-    expect(within(desafio).getByText('Médio')).toBeInTheDocument();
+    expect(within(desafio).getByText('Intermediário')).toBeInTheDocument();
     expect(within(desafio).getByText('Construa uma API com JWT')).toBeInTheDocument();
     const ferramentas = within(desafio).getByRole('list', { name: 'Ferramentas do desafio' });
     expect(within(ferramentas).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Python', 'Django']);
@@ -126,6 +126,13 @@ describe('DesafioPage', () => {
 
     expect(await screen.findByText('Desafio não encontrado.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Voltar às oportunidades/ })).toHaveAttribute('href', '/');
+  });
+
+  it('id que não é número (ex.: caminho forjado) não chama a API', async () => {
+    abrir('..%2Fempresa%2Fdashboard');
+
+    expect(await screen.findByText('Desafio não encontrado.')).toBeInTheDocument();
+    expect(api.get).not.toHaveBeenCalled();
   });
 
   it('outros erros mostram mensagem genérica', async () => {

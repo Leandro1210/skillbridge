@@ -35,7 +35,7 @@ describe('AtividadeResumo', () => {
     expect(screen.getByText('2º semestre de 2026')).toBeInTheDocument();
     expect(screen.getByText('Ativo')).toBeInTheDocument();
     expect(screen.getByText('Faltam 145 XP para "Muito ativo"')).toBeInTheDocument();
-    expect(screen.getByRole('progressbar', { name: 'Progresso até Muito ativo' })).toHaveAttribute('aria-valuenow', '71');
+    expect(screen.getByRole('progressbar', { name: 'Progresso até Muito ativo' })).toHaveAttribute('value', '71');
     expect(screen.getByRole('img', { name: /XP por semana/ })).toBeInTheDocument();
   });
 
@@ -58,7 +58,7 @@ describe('AtividadeResumo', () => {
     render(<AtividadeResumo />);
 
     expect(await screen.findByText('Você está no nível máximo de atividade nesta temporada.')).toBeInTheDocument();
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('value', '100');
   });
 
   it('temporada sem atividade avisa nos detalhes', async () => {

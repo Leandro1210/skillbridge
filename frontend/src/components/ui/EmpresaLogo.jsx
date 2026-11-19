@@ -15,7 +15,7 @@ const TAMANHOS = {
  */
 export default function EmpresaLogo({ empresa, tamanho = 'md', className }) {
   const [falhou, setFalhou] = useState(false);
-  const classes = clsx('flex shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-md)]', TAMANHOS[tamanho], className);
+  const classes = clsx('flex shrink-0 items-center justify-center overflow-hidden rounded-full font-display font-extrabold', TAMANHOS[tamanho], className);
 
   if (empresa?.logo_url && !falhou) {
     return (

@@ -56,6 +56,31 @@ describe('PerfilEditarPage: dados do perfil', () => {
     expect(await screen.findByText('Perfil salvo.')).toBeInTheDocument();
   });
 
+  it('salva os certificados escritos em texto livre', async () => {
+    const user = userEvent.setup();
+    abrir();
+
+    await user.type(await screen.findByLabelText('Seus certificados'), 'Scrum Foundation, 2026');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+
+    expect(api.patch).toHaveBeenCalledWith('/perfil/usuario/', expect.objectContaining({ certificados: 'Scrum Foundation, 2026' }));
+  });
+
+  it('mostra a prévia de como os certificados aparecem no perfil', async () => {
+    const user = userEvent.setup();
+    abrir();
+    expect(await screen.findByLabelText('Seus certificados')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Prévia dos certificados' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Seus certificados'), 'Docker, Alura, 2025, 20h');
+
+    const previa = screen.getByRole('list', { name: 'Prévia dos certificados' });
+    expect(previa).toHaveTextContent('Docker');
+    expect(previa).toHaveTextContent('Alura');
+    expect(previa).toHaveTextContent('2025');
+    expect(previa).toHaveTextContent('20 horas');
+  });
+
   it('período vazio vai como null', async () => {
     const user = userEvent.setup();
     abrir();

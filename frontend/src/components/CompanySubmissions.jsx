@@ -152,7 +152,7 @@ export default function CompanySubmissions() {
       </form>
 
       {submissions.length > 0 ? (
-        <List>
+        <List className="em-sequencia">
           {submissions.map((submission) => {
             const meta = STATUS_META[submission.status] ?? STATUS_META.pendente;
             return (

@@ -1,26 +1,28 @@
 import clsx from 'clsx';
 
-/** M3 assist/filter chip-inspired status pill — mapeia para os papéis
- * de cor M3 (container tonal + on-container), não para uma paleta
- * decorativa à parte.
- *
- * Antes `success` apontava para o primary (azul) e `warning` para o
- * tertiary, porque o esquema escuro não tinha verde nem âmbar. Com as
- * cores da logo o verde existe de verdade, então "Aprovado", "Ativo" e
- * "Concluído" finalmente aparecem em verde. */
+/**
+ * Chip em pílula, como no manual ("Estágio", "Júnior", "Desafio").
+ * - accent   azul claro com texto azul   (ex.: Estágio, modalidade)
+ * - success  verde claro                  (aprovado, ativo, iniciante)
+ * - navy     Azul-noturno com texto branco (ex.: Desafio)
+ * - warning / error  sinais de estado
+ * - neutral  cinza-azulado
+ */
 const TONES = {
   success: 'text-on-success-container bg-success-container',
   warning: 'text-on-warning-container bg-warning-container',
   error: 'text-on-error-container bg-error-container',
-  accent: 'text-on-tertiary-container bg-tertiary-container',
+  accent: 'text-on-primary-container bg-primary-container',
+  navy: 'text-white bg-brand-navy',
   neutral: 'text-on-surface-variant bg-surface-container-high',
 };
 
 const DOT = {
-  success: 'bg-success',
+  success: 'bg-brand-green',
   warning: 'bg-warning',
   error: 'bg-error',
-  accent: 'bg-tertiary',
+  accent: 'bg-primary',
+  navy: 'bg-brand-green',
   neutral: 'bg-outline',
 };
 
@@ -28,7 +30,7 @@ export default function Badge({ tone = 'neutral', dot = false, className, childr
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1.5 rounded-[var(--radius-xs)] px-2.5 py-1 text-label-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label-medium',
         TONES[tone] ?? TONES.neutral,
         className,
       )}

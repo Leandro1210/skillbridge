@@ -149,12 +149,12 @@ def test_ja_participa_e_falso_para_quem_nao_entrou(api_client, estudante, projet
     ({'q': 'mensageria'}, 'Containers'),        # busca no enunciado
     ({'q': 'estágio back'}, 'API REST'),        # busca no título da vaga
     ({'q': 'apis'}, 'API REST'),                # busca na descrição da vaga
-    ({'dificuldade': 'dificil'}, 'Containers'),
+    ({'dificuldade': 'avancado'}, 'Containers'),
     ({'tecnologia': 'django'}, 'API REST'),     # tecnologia do desafio
     ({'tecnologia': 'sql'}, 'API REST'),        # tecnologia esperada pela vaga
 ])
 def test_filtros_do_feed(api_client, estudante, projeto, empresa, filtro, esperado):
-    criar_desafio(empresa, titulo='Containers', descricao='Filas e mensageria', ferramentas='Docker, RabbitMQ', dificuldade='dificil')
+    criar_desafio(empresa, titulo='Containers', descricao='Filas e mensageria', ferramentas='Docker, RabbitMQ', dificuldade='avancado')
 
     api_client.force_authenticate(estudante)
     resp = api_client.get(CATALOGO_URL, filtro)

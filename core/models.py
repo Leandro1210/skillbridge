@@ -6,11 +6,17 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+# Rótulos (verbose_name) repetidos em vários models.
+ROTULO_TITULO = 'Título'
+ROTULO_DESCRICAO = 'Descrição'
+ROTULO_CRIADO_EM = 'Criado em'
+
 
 class Dificuldade(models.TextChoices):
-    FACIL = 'facil', 'Fácil'
-    MEDIO = 'medio', 'Médio'
-    DIFICIL = 'dificil', 'Difícil'
+    """Nível do desafio — para quem ele foi pensado."""
+    INICIANTE = 'iniciante', 'Iniciante'
+    INTERMEDIARIO = 'intermediario', 'Intermediário'
+    AVANCADO = 'avancado', 'Avançado'
 
 
 class FormatoEntrega(models.TextChoices):
@@ -115,6 +121,12 @@ class PerfilUsuario(models.Model):
         default='',
         help_text='Informações adicionais sobre você.',
     )
+    certificados = models.TextField(
+        'Certificados',
+        blank=True,
+        default='',
+        help_text='Cursos e certificações, descritos livremente pelo aluno.',
+    )
     curso = models.CharField('Curso', max_length=200, blank=True, default='')
     periodo_atual = models.PositiveSmallIntegerField(
         'Período atual',
@@ -153,16 +165,16 @@ class ProjetoAcademico(models.Model):
         related_name='projetos_academicos',
         verbose_name='Usuário',
     )
-    titulo = models.CharField('Título', max_length=200)
+    titulo = models.CharField(ROTULO_TITULO, max_length=200)
     disciplina = models.CharField('Disciplina', max_length=200, blank=True, default='')
     periodo = models.PositiveSmallIntegerField(
         'Período', null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(12)],
     )
     repo_url = models.URLField('Repositório')
     tecnologias = models.CharField('Tecnologias', max_length=300, blank=True, default='')
-    descricao = models.TextField('Descrição', blank=True, default='')
+    descricao = models.TextField(ROTULO_DESCRICAO, blank=True, default='')
     destaque = models.BooleanField('Destaque', default=False, help_text='Aparece primeiro no perfil.')
-    criado_em = models.DateTimeField('Criado em', auto_now_add=True)
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
 
     class Meta:
         verbose_name = 'Projeto acadêmico'
@@ -192,13 +204,13 @@ class Publicacao(models.Model):
         related_name='publicacoes',
         verbose_name='Usuário',
     )
-    titulo = models.CharField('Título', max_length=300)
+    titulo = models.CharField(ROTULO_TITULO, max_length=300)
     tipo = models.CharField('Tipo', max_length=25, choices=TipoPublicacao.choices, default=TipoPublicacao.ARTIGO)
     veiculo = models.CharField('Evento ou periódico', max_length=300, blank=True, default='')
     ano = models.PositiveSmallIntegerField('Ano', null=True, blank=True)
     url = models.URLField('Link ou DOI')
     coautores = models.CharField('Coautores', max_length=500, blank=True, default='')
-    criado_em = models.DateTimeField('Criado em', auto_now_add=True)
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
 
     class Meta:
         verbose_name = 'Publicação'
@@ -256,10 +268,10 @@ class Projeto(models.Model):
         help_text='Ferramentas para resolver o desafio, separadas por vírgula.',
     )
     dificuldade = models.CharField(
-        'Dificuldade',
-        max_length=10,
+        'Nível',
+        max_length=15,
         choices=Dificuldade.choices,
-        default=Dificuldade.MEDIO,
+        default=Dificuldade.INTERMEDIARIO,
     )
     # Ciclo de vida de um processo seletivo: a empresa prepara (rascunho),
     # abre para participações (publicado) e encerra. Desafios ficam abertos a
@@ -284,7 +296,7 @@ class Projeto(models.Model):
         blank=True,
         help_text='Período do curso a partir do qual o desafio é recomendado. Só informativo, não bloqueia.',
     )
-    created_at = models.DateTimeField('Criado em', auto_now_add=True)
+    created_at = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
 
     class Meta:
         verbose_name = 'Projeto'
@@ -343,7 +355,7 @@ class Etapa(models.Model):
         verbose_name='Projeto',
     )
     ordem = models.PositiveIntegerField('Ordem')
-    descricao = models.TextField('Descrição')
+    descricao = models.TextField(ROTULO_DESCRICAO)
     criterios_tecnicos = models.TextField(
         'Critérios técnicos',
         help_text='Critérios que a entrega deve satisfazer para ser aprovada.',
@@ -444,7 +456,7 @@ class LancamentoXP(models.Model):
     )
     xp = models.PositiveIntegerField('XP')
     temporada = models.CharField('Temporada', max_length=6, db_index=True, help_text='Ex.: 2026.2')
-    criado_em = models.DateTimeField('Criado em', default=timezone.now, db_index=True)
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, default=timezone.now, db_index=True)
 
     class Meta:
         verbose_name = 'Lançamento de XP'
@@ -464,7 +476,7 @@ class Empresa(models.Model):
     """Empresa que publica vagas na plataforma."""
     nome = models.CharField('Nome', max_length=300)
     setor = models.CharField('Setor', max_length=200)
-    descricao = models.TextField('Descrição', blank=True, default='')
+    descricao = models.TextField(ROTULO_DESCRICAO, blank=True, default='')
 
     class Meta:
         verbose_name = 'Empresa'
@@ -533,7 +545,7 @@ class Vaga(models.Model):
         related_name='vagas',
         verbose_name='Empresa',
     )
-    titulo = models.CharField('Título', max_length=300)
+    titulo = models.CharField(ROTULO_TITULO, max_length=300)
     tipo = models.CharField(
         'Tipo',
         max_length=12,

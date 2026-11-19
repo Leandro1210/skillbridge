@@ -13,7 +13,7 @@ import PerfilEmpresaPage from './components/PerfilEmpresaPage';
 import CompanyProfileEdit from './components/CompanyProfileEdit';
 import Shell from './components/Shell';
 import Button from './components/ui/Button';
-import Spinner from './components/ui/Spinner';
+import Carregando from './components/ui/Carregando';
 import Logo from './components/ui/Logo';
 import api from './api';
 import { EVENTO_ATIVIDADE } from './lib/atividade';
@@ -124,13 +124,7 @@ export default function App() {
   // Se logado mas perfil ainda nao carregou, mostra loading
   if (!userProfile) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-surface">
-        <Logo variant="lockup" height="2rem" />
-        <div className="flex items-center gap-3">
-          <Spinner size="md" />
-          <span className="text-body-large text-on-surface-variant">Carregando…</span>
-        </div>
-      </div>
+      <Carregando telaCheia />
     );
   }
 

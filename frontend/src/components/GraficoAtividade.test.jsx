@@ -38,14 +38,14 @@ describe('GraficoAtividade', () => {
   it('hover numa semana mostra o total e o detalhe por origem', () => {
     render(<GraficoAtividade serie={SERIE} />);
 
-    fireEvent.pointerEnter(screen.getByRole('img', { name: 'Semana 13/07 – 19/07: 85 XP' }));
+    fireEvent.pointerEnter(screen.getByRole('img', { name: 'Semana 13/07 a 19/07: 85 XP' }));
 
     const tooltip = screen.getByRole('tooltip');
     expect(within(tooltip).getByText('85 XP')).toBeInTheDocument();
     expect(within(tooltip).getByText('Participação em desafios')).toBeInTheDocument();
     expect(within(tooltip).getByText('60')).toBeInTheDocument();
 
-    fireEvent.pointerLeave(screen.getByRole('img', { name: 'Semana 13/07 – 19/07: 85 XP' }));
+    fireEvent.pointerLeave(screen.getByRole('img', { name: 'Semana 13/07 a 19/07: 85 XP' }));
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
@@ -66,7 +66,7 @@ describe('GraficoAtividade', () => {
 
     const tabela = screen.getByRole('table', { name: 'XP por semana da temporada' });
     expect(within(tabela).getAllByRole('row')).toHaveLength(5); // cabeçalho + 4 semanas
-    expect(within(tabela).getByText('13/07 – 19/07')).toBeInTheDocument();
+    expect(within(tabela).getByText('13/07 a 19/07')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Ocultar tabela' }));
     expect(screen.queryByRole('table')).not.toBeInTheDocument();

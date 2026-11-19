@@ -151,22 +151,23 @@ export default function ProjectWorkspace({ projectId }) {
 
       <Acompanhamento situacao={situacao} />
 
-      <div role="status" className={clsx('flex gap-3 rounded-[var(--radius-md)] border p-4', TONS_BANNER[mensagem.tom])}>
+      {/* <output> já tem o papel "status": leitores de tela anunciam a mudança */}
+      <output className={clsx('flex gap-3 rounded-[var(--radius-md)] border p-4', TONS_BANNER[mensagem.tom])}>
         <Icon name={mensagem.icone} size="1.4rem" className="mt-0.5 shrink-0" />
-        <div>
-          <p className="text-title-small">{mensagem.titulo}</p>
-          <p className="mt-0.5 text-body-medium opacity-90">{mensagem.texto}</p>
+        <span className="block">
+          <span className="block text-title-small">{mensagem.titulo}</span>
+          <span className="mt-0.5 block text-body-medium opacity-90">{mensagem.texto}</span>
           {situacao === 'avaliacao' && (
-            <p className="mt-1 text-body-small opacity-80">Enviada em {new Date(daEtapa[0].entregue_em).toLocaleString('pt-BR')}</p>
+            <span className="mt-1 block text-body-small opacity-80">Enviada em {new Date(daEtapa[0].entregue_em).toLocaleString('pt-BR')}</span>
           )}
           {(situacao === 'ajustes' || situacao === 'aprovada') && daEtapa[0].feedback_validacao && (
-            <blockquote className="mt-3 border-l-2 border-current pl-3 text-body-medium">
+            <span className="mt-3 block border-l-2 border-current pl-3 text-body-medium">
               <span className="block text-label-medium opacity-80">Retorno da empresa</span>
               {daEtapa[0].feedback_validacao}
-            </blockquote>
+            </span>
           )}
-        </div>
-      </div>
+        </span>
+      </output>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
@@ -277,7 +278,7 @@ function corDaLinha(passoDaEsquerda) {
 
 function AbasDeEtapas({ etapas, entregas, ativa, onEscolher }) {
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Etapas do desafio">
+    <fieldset className="flex flex-wrap gap-2" aria-label="Etapas do desafio">
       {etapas.map((etapa) => {
         const situacao = situacaoDaEtapa(ultimaEntrega(entregas, etapa.id));
         const selecionada = etapa.id === ativa;
@@ -299,7 +300,7 @@ function AbasDeEtapas({ etapas, entregas, ativa, onEscolher }) {
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 
@@ -318,7 +319,7 @@ function HistoricoDeEnvios({ entregas }) {
                 <Badge tone={status.tom} dot>{status.rotulo}</Badge>
               </div>
               {entrega.repo_url && (
-                <a href={entrega.repo_url} target="_blank" rel="noopener noreferrer" className="mt-1 block truncate text-body-small font-medium text-primary hover:underline">
+                <a href={entrega.repo_url} target="_blank" rel="noopener noreferrer" className="mt-1 block text-body-small font-medium text-primary break-all hover:underline">
                   {entrega.repo_url}
                 </a>
               )}

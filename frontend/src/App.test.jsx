@@ -125,7 +125,8 @@ describe('App: sessão', () => {
     renderComRotas(<App />);
     await screen.findByText('Painel do aluno');
 
-    await user.click(screen.getByRole('button', { name: /Sair/ }));
+    // há um "Sair" na lateral (telas largas) e outro na barra do celular; o CSS mostra um só
+    await user.click(screen.getAllByRole('button', { name: /Sair/ })[0]);
 
     expect(api.post).toHaveBeenCalledWith('/auth/logout/', { refresh: 'meu-refresh' });
     expect(getAccessToken()).toBeNull();
@@ -139,7 +140,8 @@ describe('App: sessão', () => {
     renderComRotas(<App />);
     await screen.findByText('Painel do aluno');
 
-    await user.click(screen.getByRole('button', { name: /Sair/ }));
+    // há um "Sair" na lateral (telas largas) e outro na barra do celular; o CSS mostra um só
+    await user.click(screen.getAllByRole('button', { name: /Sair/ })[0]);
 
     await waitFor(() => expect(getAccessToken()).toBeNull());
     expect(screen.getByRole('button', { name: 'Tela de login' })).toBeInTheDocument();

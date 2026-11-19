@@ -7,11 +7,12 @@ import Icon from './ui/Icon';
 import Skeleton from './ui/Skeleton';
 import PageHeader from './ui/PageHeader';
 import { Input, Select, Textarea } from './ui/Input';
+import ListaCertificados from './ListaCertificados';
 
 const PERFIL_VAZIO = {
   titulo: '', curso: '', instituicao_ensino: '', periodo_atual: '', estudando_atualmente: '',
   bio: '', tecnologias: '', portfolio_url: '', github_url: '', linkedin_url: '',
-  descricao_adicional: '', mostrar_atividade: false,
+  descricao_adicional: '', mostrar_atividade: false, certificados: '',
 };
 
 /** Primeira mensagem de erro do DRF ({campo: [msg]}), ou a genérica. */
@@ -117,6 +118,33 @@ export default function PerfilEditarPage() {
           </p>
           <Textarea label="Sobre você" value={perfil.bio} onChange={alterar('bio')} rows={3} />
           <Textarea label="Tecnologias (separadas por vírgula)" value={perfil.tecnologias} onChange={alterar('tecnologias')} rows={2} />
+          {/* Certificados: texto livre, uma linha por certificado, com prévia de como fica no perfil */}
+          <div className="rounded-[var(--radius-lg)] border border-outline-variant bg-surface-container-low p-4 sm:p-5">
+            <div className="mb-3 flex items-start gap-3">
+              <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-container text-success">
+                <Icon name="workspace_premium" size="1.25rem" />
+              </span>
+              <div>
+                <p className="text-title-small text-on-surface">Certificados</p>
+                <p className="text-body-small text-on-surface-variant">
+                  Um certificado por linha. Se quiser, separe por vírgula: curso, instituição, ano e carga horária.
+                </p>
+              </div>
+            </div>
+            <Textarea
+              label="Seus certificados"
+              value={perfil.certificados}
+              onChange={alterar('certificados')}
+              rows={4}
+              placeholder={'AWS Cloud Practitioner, Amazon Web Services, 2026, 40h\nPython Avançado, Senai, 2025, 60 horas'}
+            />
+            {perfil.certificados.trim() && (
+              <div className="mt-4">
+                <p className="mb-2 text-label-medium uppercase tracking-[0.12em] text-on-surface-variant">Como aparece no seu perfil</p>
+                <ListaCertificados texto={perfil.certificados} rotulo="Prévia dos certificados" />
+              </div>
+            )}
+          </div>
 
           <h2 className="pt-2 text-title-large text-on-surface">Links</h2>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -132,8 +160,8 @@ export default function PerfilEditarPage() {
               onChange={alterar('mostrar_atividade')}
               className="mt-1 h-4 w-4 accent-[var(--color-primary)]"
             />
-            <span>
-              <span className="block text-label-large text-on-surface">Mostrar minha atividade para as empresas</span>
+            <span className="text-label-large text-on-surface">
+              Mostrar minha atividade para as empresas
               <span className="block text-body-small text-on-surface-variant">
                 O XP e o gráfico de atividade do semestre aparecem no seu perfil público. Você sempre vê a sua atividade.
               </span>
@@ -141,9 +169,9 @@ export default function PerfilEditarPage() {
           </label>
 
           {aviso && (
-            <p role="status" className={aviso.tipo === 'erro' ? 'font-medium text-error' : 'font-medium text-primary'}>
+            <output className={aviso.tipo === 'erro' ? 'block font-medium text-error' : 'block font-medium text-primary'}>
               {aviso.texto}
-            </p>
+            </output>
           )}
           <Button type="submit" disabled={salvando}>{salvando ? 'Salvando...' : 'Salvar perfil'}</Button>
         </form>
@@ -156,22 +184,7 @@ export default function PerfilEditarPage() {
         vazio={{ titulo: '', disciplina: '', periodo: '', repo_url: '', tecnologias: '', descricao: '', destaque: false }}
         rotuloAdicionar="Adicionar projeto"
         resumo={(p) => [p.disciplina, p.periodo && `${p.periodo}º período`, p.destaque && 'destaque'].filter(Boolean).join(' · ')}
-        campos={(dados, alterarCampo) => (
-          <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input label="Título do projeto" value={dados.titulo} onChange={alterarCampo('titulo')} required />
-              <Input label="Repositório" type="url" value={dados.repo_url} onChange={alterarCampo('repo_url')} placeholder="https://github.com/..." required />
-              <Input label="Disciplina" value={dados.disciplina} onChange={alterarCampo('disciplina')} />
-              <Input label="Período em que foi feito" type="number" min="1" max="12" value={dados.periodo} onChange={alterarCampo('periodo')} />
-            </div>
-            <Input label="Tecnologias do projeto" value={dados.tecnologias} onChange={alterarCampo('tecnologias')} placeholder="Ex: Python, Django" />
-            <Textarea label="Descrição do projeto" value={dados.descricao} onChange={alterarCampo('descricao')} rows={2} />
-            <label className="flex items-center gap-2 text-body-medium text-on-surface">
-              <input type="checkbox" checked={dados.destaque} onChange={alterarCampo('destaque')} className="h-4 w-4 accent-[var(--color-primary)]" />
-              Destacar no perfil
-            </label>
-          </>
-        )}
+        campos={CamposProjeto}
       />
 
       <ListaEditavel
@@ -181,22 +194,47 @@ export default function PerfilEditarPage() {
         vazio={{ titulo: '', tipo: 'artigo', veiculo: '', ano: '', url: '', coautores: '' }}
         rotuloAdicionar="Adicionar publicação"
         resumo={(p) => [TIPOS_PUBLICACAO[p.tipo] ?? p.tipo, p.veiculo, p.ano].filter(Boolean).join(' · ')}
-        campos={(dados, alterarCampo) => (
-          <>
-            <Input label="Título da publicação" value={dados.titulo} onChange={alterarCampo('titulo')} required />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Select label="Tipo" value={dados.tipo} onChange={alterarCampo('tipo')}>
-                {Object.entries(TIPOS_PUBLICACAO).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
-              </Select>
-              <Input label="Evento ou periódico" value={dados.veiculo} onChange={alterarCampo('veiculo')} />
-              <Input label="Ano" type="number" min="1990" max="2100" value={dados.ano} onChange={alterarCampo('ano')} />
-            </div>
-            <Input label="Link ou DOI" type="url" value={dados.url} onChange={alterarCampo('url')} placeholder="https://doi.org/..." required />
-            <Input label="Coautores" value={dados.coautores} onChange={alterarCampo('coautores')} />
-          </>
-        )}
+        campos={CamposPublicacao}
       />
     </section>
+  );
+}
+
+/** Campos do formulário de um projeto acadêmico. */
+function CamposProjeto({ dados, alterarCampo }) {
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Input label="Título do projeto" value={dados.titulo} onChange={alterarCampo('titulo')} required />
+        <Input label="Repositório" type="url" value={dados.repo_url} onChange={alterarCampo('repo_url')} placeholder="https://github.com/..." required />
+        <Input label="Disciplina" value={dados.disciplina} onChange={alterarCampo('disciplina')} />
+        <Input label="Período em que foi feito" type="number" min="1" max="12" value={dados.periodo} onChange={alterarCampo('periodo')} />
+      </div>
+      <Input label="Tecnologias do projeto" value={dados.tecnologias} onChange={alterarCampo('tecnologias')} placeholder="Ex: Python, Django" />
+      <Textarea label="Descrição do projeto" value={dados.descricao} onChange={alterarCampo('descricao')} rows={2} />
+      <label className="flex items-center gap-2 text-body-medium text-on-surface">
+        <input type="checkbox" checked={dados.destaque} onChange={alterarCampo('destaque')} className="h-4 w-4 accent-[var(--color-primary)]" />
+        <span>Destacar no perfil</span>
+      </label>
+    </>
+  );
+}
+
+/** Campos do formulário de uma publicação. */
+function CamposPublicacao({ dados, alterarCampo }) {
+  return (
+    <>
+      <Input label="Título da publicação" value={dados.titulo} onChange={alterarCampo('titulo')} required />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Select label="Tipo" value={dados.tipo} onChange={alterarCampo('tipo')}>
+          {Object.entries(TIPOS_PUBLICACAO).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+        </Select>
+        <Input label="Evento ou periódico" value={dados.veiculo} onChange={alterarCampo('veiculo')} />
+        <Input label="Ano" type="number" min="1990" max="2100" value={dados.ano} onChange={alterarCampo('ano')} />
+      </div>
+      <Input label="Link ou DOI" type="url" value={dados.url} onChange={alterarCampo('url')} placeholder="https://doi.org/..." required />
+      <Input label="Coautores" value={dados.coautores} onChange={alterarCampo('coautores')} />
+    </>
   );
 }
 
@@ -205,6 +243,7 @@ export default function PerfilEditarPage() {
  * Campos numéricos vazios vão como null para a API.
  */
 function ListaEditavel({ titulo, descricao, url, vazio, rotuloAdicionar, resumo, campos }) {
+  const Campos = campos; // componente com os campos do formulário
   const [itens, setItens] = useState([]);
   const [novo, setNovo] = useState(null); // null = formulário fechado
   const [salvando, setSalvando] = useState(false);
@@ -262,7 +301,7 @@ function ListaEditavel({ titulo, descricao, url, vazio, rotuloAdicionar, resumo,
           {itens.map((item) => (
             <li key={item.id} className="flex items-start justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="truncate text-body-large text-on-surface">{item.titulo}</p>
+                <p className="text-body-large text-on-surface wrap-anywhere">{item.titulo}</p>
                 <p className="text-body-small text-on-surface-variant">{resumo(item)}</p>
               </div>
               <Button variant="danger" size="sm" onClick={() => remover(item)} aria-label={`Remover ${item.titulo}`}>
@@ -274,12 +313,12 @@ function ListaEditavel({ titulo, descricao, url, vazio, rotuloAdicionar, resumo,
       )}
 
       {aviso && (
-        <p role="status" className={`mt-3 font-medium ${aviso.tipo === 'erro' ? 'text-error' : 'text-primary'}`}>{aviso.texto}</p>
+        <output className={`mt-3 block font-medium ${aviso.tipo === 'erro' ? 'text-error' : 'text-primary'}`}>{aviso.texto}</output>
       )}
 
       {novo ? (
         <form onSubmit={adicionar} className="mt-4 space-y-4 rounded-[var(--radius-md)] border border-outline-variant p-4">
-          {campos(novo, alterarCampo)}
+          <Campos dados={novo} alterarCampo={alterarCampo} />
           <div className="flex gap-3">
             <Button type="button" variant="outlined" onClick={() => setNovo(null)}>Cancelar</Button>
             <Button type="submit" disabled={salvando}>{salvando ? 'Salvando...' : 'Salvar'}</Button>
