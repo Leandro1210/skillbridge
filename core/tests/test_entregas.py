@@ -23,8 +23,8 @@ def test_etapa_inexistente_retorna_404(api_client, inscrito):
     assert resp.status_code == 404
 
 
-def test_projeto_inativo_nao_aceita_entrega(api_client, inscrito, projeto):
-    projeto.ativo = False
+def test_desafio_encerrado_nao_aceita_entrega(api_client, inscrito, projeto):
+    projeto.status = 'encerrado'
     projeto.save()
 
     api_client.force_authenticate(inscrito)

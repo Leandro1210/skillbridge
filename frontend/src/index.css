@@ -1,176 +1,163 @@
 @import "tailwindcss";
 
 /* ===================================================================
-   SkillBridge — Design System
-   Baseado no Material Design 3 (M3) — https://m3.material.io/
-   Esquema claro derivado da logo da marca. Papéis de cor e escala
-   tipográfica seguem a estrutura de tokens do M3 (primary/secondary/
-   tertiary + neutros de superfície em 5 níveis + papéis on-X e
-   X-container).
+   SkillBridge — Design System (Manual de Marca: docs/SkillBridge-Manual-de-Marca.pdf)
+
+   Cores da marca e proporção de uso:
+     01 Azul Bridge   #0058F0  ≈18%  confiança — ações, links, destaques
+     02 Azul-noturno  #01183A  ≈20%  rigor — texto, superfícies de peso
+     03 Verde Conexão #02BC9A  ≈7%   crescimento — sucesso, o "próximo passo"
+     04 Branco/névoa  #FFFFFF · #F4F7FC  ≈55%  clareza — fundo e respiro
+   Tipografia: Montserrat (títulos, Bold/ExtraBold) + Inter (texto e interface).
+   Raios: 8 · 16 · pílula. Grafismos: faixas diagonais, pontos, recorte.
+
+   Os nomes dos tokens seguem os papéis do Material 3 (primary, surface,
+   on-surface...) que o resto do código já usa; os VALORES vêm do manual.
    =================================================================== */
 
 @theme {
-  /* -----------------------------------------------------------------
-     COR — esquema claro derivado da logo do SkillBridge.
-
-     Sementes extraídas do arquivo da marca:
-       azul  #0058f0   navy  #01183a   verde #02bc9a
-
-     Hierarquia pedida: o branco domina a interface, o azul da logo é o
-     acento que carrega as ações, e o azul escuro é a ênfase profunda.
-     As escalas tonais foram geradas em CIELCh a partir dessas sementes,
-     com correção de deriva de matiz nos tons claros (sem isso o azul
-     puxa para lilás) e todos os pares de contraste conferidos em WCAG AA.
-     ----------------------------------------------------------------- */
-  /* Primary — o azul da logo (#0058f0). Carrega as ações principais:
-     botões preenchidos, FAB, estado ativo de navegação, links e foco. */
+  /* Primary — Azul Bridge: ações principais, links, foco, estado ativo */
   --color-primary                   : #0058f0;
   --color-on-primary                : #ffffff;
-  --color-primary-container         : #dce9ff;
-  --color-on-primary-container      : #00245f;
-  /* Secondary — apoio. Usado pelo botão tonal (ênfase média: existe
-     para ações como "Publicar", que importam mas não são a ação
-     principal da tela). Um pouco mais saturado que o primary-container
-     para não ler como desabilitado, e bem mais claro que o primary. */
-  --color-secondary                 : #565e71;
+  --color-primary-container         : #e3ecff;
+  --color-on-primary-container      : #003fae;
+  /* Secondary — apoio neutro-azulado (botão tonal, avatares) */
+  --color-secondary                 : #3d4c6b;
   --color-on-secondary              : #ffffff;
-  --color-secondary-container       : #cadaff;
-  --color-on-secondary-container    : #24304d;
-  /* Tertiary — o azul escuro da logo (#01183a). Ênfase profunda:
-     números de nível, destaques de XP e superfícies invertidas. */
-  --color-tertiary                  : #003d79;
+  --color-secondary-container       : #e6edfa;
+  --color-on-secondary-container    : #01183a;
+  /* Tertiary — Azul-noturno: superfícies de peso, chips "Desafio" */
+  --color-tertiary                  : #01183a;
   --color-on-tertiary               : #ffffff;
-  --color-tertiary-container        : #d9e6ff;
-  --color-on-tertiary-container     : #001f45;
-  /* Success — o verde da logo (#02bc9a). Semântico: entrega aprovada,
-     desafio ativo, projeto concluído. */
-  --color-success                   : #006653;
+  --color-tertiary-container        : #dde5f2;
+  --color-on-tertiary-container     : #01183a;
+  /* Success — Verde Conexão. O verde puro (#02BC9A) não tem contraste
+     para texto sobre branco: texto e ícone usam o tom escurecido, e o
+     verde da marca fica para preenchimentos (--color-brand-green). */
+  --color-success                   : #00806a;
   --color-on-success                : #ffffff;
-  --color-success-container         : #b3efd8;
-  --color-on-success-container      : #002a20;
-  /* Warning — âmbar contido. Semântico: aguardando avaliação,
-     dificuldade média. Fora da paleta da marca por ser sinal universal. */
+  --color-success-container         : #dcf6ef;
+  --color-on-success-container      : #00513f;
+  /* Warning e Error — sinais universais, fora da paleta da marca */
   --color-warning                   : #8b5800;
   --color-on-warning                : #ffffff;
-  --color-warning-container         : #ffddb2;
-  --color-on-warning-container      : #341f00;
-  /* Error — vermelho. Semântico: entrega reprovada, falha, ação destrutiva. */
+  --color-warning-container         : #ffe7c2;
+  --color-on-warning-container      : #3d2400;
   --color-error                     : #d10031;
   --color-on-error                  : #ffffff;
-  --color-error-container           : #ffe2de;
-  --color-on-error-container        : #50000c;
-  /* Superfícies — o branco domina. O cartão é branco puro sobre uma
-     página levemente azulada; os 5 níveis de container do M3 sobem em
-     tom (não em sombra) para indicar elevação. */
-  --color-surface                   : #fafcff;
-  --color-surface-dim               : #e0e3e8;
+  --color-error-container           : #ffe4e3;
+  --color-on-error-container        : #5c000f;
+  /* Superfícies — a névoa é a página, o branco é o cartão */
+  --color-surface                   : #f4f7fc;
+  --color-surface-dim               : #dfe5ef;
   --color-surface-bright            : #ffffff;
   --color-surface-container-lowest  : #ffffff;
-  --color-surface-container-low     : #f6f9ff;
-  --color-surface-container         : #f1f4f9;
-  --color-surface-container-high    : #ebeef3;
-  --color-surface-container-highest : #e5e8ee;
-  /* Conteúdo sobre superfície — a tinta é azul-escura, não cinza. */
-  --color-on-surface                : #1d253b;
-  --color-on-surface-variant        : #545968;
-  --color-surface-variant           : #dfe9f9;
-  /* Contornos */
-  --color-outline                   : #767c8b;
-  --color-outline-variant           : #ccd5e5;
-  /* Inversos e véu */
-  --color-inverse-surface           : #002754;
-  --color-inverse-on-surface        : #f1f4f9;
-  --color-inverse-primary           : #b0cdff;
-  --color-scrim                     : #001737;
+  --color-surface-container-low     : #f4f7fc;
+  --color-surface-container         : #eef2f9;
+  --color-surface-container-high    : #e7ecf5;
+  --color-surface-container-highest : #dfe6f2;
+  /* Tinta — o Azul-noturno "dá peso ao texto" */
+  --color-on-surface                : #01183a;
+  --color-on-surface-variant        : #4a5670;
+  --color-surface-variant           : #e3ecff;
+  --color-outline                   : #7a8499;
+  --color-outline-variant           : #dbe2ee;
+  --color-inverse-surface           : #01183a;
+  --color-inverse-on-surface        : #f4f7fc;
+  --color-inverse-primary           : #8fb4ff;
+  --color-scrim                     : #01183a;
 
-  /* -----------------------------------------------------------------
-     Forma — escala M3 (none/xs/sm/md/lg/xl/full)
-     ----------------------------------------------------------------- */
+  /* Cores puras da marca, para grafismos e preenchimentos */
+  --color-brand-blue                : #0058f0;
+  --color-brand-blue-light          : #4f8bff;
+  --color-brand-navy                : #01183a;
+  --color-brand-navy-soft           : #0b2752;
+  --color-brand-green               : #02bc9a;
+  --color-brand-mist                : #f4f7fc;
+
+  /* Forma — o manual pede 8 · 16 · pílula */
   --radius-none: 0;
-  --radius-xs: 0.25rem;
+  --radius-xs: 0.375rem;
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
-  --radius-xl: 1.75rem;
+  --radius-xl: 1.5rem;
   --radius-full: 9999px;
 
-  /* -----------------------------------------------------------------
-     Elevação — no esquema claro a sombra volta a ser o sinal principal
-     de elevação (no escuro era o tom da superfície). Tingida com o
-     azul-escuro da marca em opacidade baixa: sombra preta pura sobre
-     branco lê como sujeira cinza
-     ----------------------------------------------------------------- */
-  --shadow-elevation-1: 0 1px 2px rgba(13, 26, 56, 0.08), 0 2px 6px rgba(13, 26, 56, 0.06);
-  --shadow-elevation-2: 0 2px 4px rgba(13, 26, 56, 0.08), 0 6px 14px rgba(13, 26, 56, 0.09);
-  --shadow-elevation-3: 0 6px 12px rgba(13, 26, 56, 0.10), 0 14px 32px rgba(13, 26, 56, 0.12);
+  /* Elevação — sombras tingidas de Azul-noturno, suaves e difusas */
+  --shadow-elevation-1: 0 1px 2px rgba(1, 24, 58, 0.05), 0 4px 12px rgba(1, 24, 58, 0.05);
+  --shadow-elevation-2: 0 2px 6px rgba(1, 24, 58, 0.06), 0 12px 28px rgba(1, 24, 58, 0.09);
+  --shadow-elevation-3: 0 8px 16px rgba(1, 24, 58, 0.08), 0 24px 48px rgba(1, 24, 58, 0.14);
+  --shadow-brand: 0 8px 22px rgba(0, 88, 240, 0.28);
 
-  /* -----------------------------------------------------------------
-     Tipografia — Roboto, escala M3 (papéis usados nesta app)
-     ----------------------------------------------------------------- */
-  --font-sans: 'Roboto', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  /* Tipografia — Inter no texto, Montserrat nos títulos (font-display) */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Montserrat', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
-  --text-headline-large: 2rem;
-  --text-headline-large--line-height: 2.5rem;
-  --text-headline-large--font-weight: 400;
+  --text-headline-large: 2.25rem;
+  --text-headline-large--line-height: 2.625rem;
+  --text-headline-large--font-weight: 800;
+  --text-headline-large--letter-spacing: -0.02em;
 
   --text-headline-medium: 1.75rem;
-  --text-headline-medium--line-height: 2.25rem;
-  --text-headline-medium--font-weight: 400;
+  --text-headline-medium--line-height: 2.2rem;
+  --text-headline-medium--font-weight: 800;
+  --text-headline-medium--letter-spacing: -0.015em;
 
   --text-headline-small: 1.5rem;
   --text-headline-small--line-height: 2rem;
-  --text-headline-small--font-weight: 400;
+  --text-headline-small--font-weight: 700;
+  --text-headline-small--letter-spacing: -0.01em;
 
-  --text-title-large: 1.375rem;
+  --text-title-large: 1.3rem;
   --text-title-large--line-height: 1.75rem;
-  --text-title-large--font-weight: 500;
+  --text-title-large--font-weight: 700;
+  --text-title-large--letter-spacing: -0.01em;
 
   --text-title-medium: 1rem;
   --text-title-medium--line-height: 1.5rem;
-  --text-title-medium--font-weight: 500;
-  --text-title-medium--letter-spacing: 0.009375em;
+  --text-title-medium--font-weight: 600;
 
   --text-title-small: 0.875rem;
   --text-title-small--line-height: 1.25rem;
-  --text-title-small--font-weight: 500;
-  --text-title-small--letter-spacing: 0.00714em;
+  --text-title-small--font-weight: 600;
 
   --text-body-large: 1rem;
   --text-body-large--line-height: 1.5rem;
   --text-body-large--font-weight: 400;
 
   --text-body-medium: 0.875rem;
-  --text-body-medium--line-height: 1.25rem;
+  --text-body-medium--line-height: 1.375rem;
   --text-body-medium--font-weight: 400;
-  --text-body-medium--letter-spacing: 0.01786em;
 
   --text-body-small: 0.75rem;
-  --text-body-small--line-height: 1rem;
+  --text-body-small--line-height: 1.1rem;
   --text-body-small--font-weight: 400;
-  --text-body-small--letter-spacing: 0.03333em;
+  --text-body-small--letter-spacing: 0.01em;
 
   --text-label-large: 0.875rem;
   --text-label-large--line-height: 1.25rem;
-  --text-label-large--font-weight: 500;
-  --text-label-large--letter-spacing: 0.00714em;
+  --text-label-large--font-weight: 600;
 
   --text-label-medium: 0.75rem;
   --text-label-medium--line-height: 1rem;
-  --text-label-medium--font-weight: 500;
-  --text-label-medium--letter-spacing: 0.03333em;
+  --text-label-medium--font-weight: 600;
+  --text-label-medium--letter-spacing: 0.01em;
 
   --text-label-small: 0.6875rem;
   --text-label-small--line-height: 1rem;
-  --text-label-small--font-weight: 500;
-  --text-label-small--letter-spacing: 0.03571em;
+  --text-label-small--font-weight: 600;
+  --text-label-small--letter-spacing: 0.02em;
 
-  /* -----------------------------------------------------------------
-     Animação — restrita e intencional (entrada em nível de
-     seção/grupo, não por elemento individual)
-     ----------------------------------------------------------------- */
-  --animate-fade-in: fade-in 0.35s cubic-bezier(0.2, 0, 0, 1);
-  --animate-rise: rise 0.4s cubic-bezier(0.2, 0, 0, 1);
+  /* Motion — suave, com desaceleração longa no fim; nunca brusco */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-brand-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --animate-fade-in: fade-in 0.5s var(--ease-brand) both;
+  --animate-rise: rise 0.6s var(--ease-brand) both;
+  --animate-page: page-in 0.55s var(--ease-brand) both;
+  --animate-scale-in: scale-in 0.45s var(--ease-brand) both;
+  --animate-float: float 7s ease-in-out infinite;
 }
 
 /* ===================================================================
@@ -183,14 +170,80 @@
 }
 
 @keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes page-in {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Grafismo "faixas": cada faixa entra deslizando na diagonal */
+@keyframes faixa-in {
+  from { opacity: 0; transform: translate(-12%, 6%); }
+  to   { opacity: 1; transform: translate(0, 0); }
+}
+
+/* Flutuação de cada faixa do grafismo, com amplitude própria (--dx, --dy) */
+@keyframes deriva {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(var(--dx, 8px), var(--dy, -10px)); }
+}
+
+/* Deriva lenta dos grafismos de fundo */
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(6px, -8px); }
+}
+
+/* Grafismo "pontos": a ligação entre os pontos se desenha */
+@keyframes ligar {
+  from { stroke-dashoffset: 120; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes pulso {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.2); }
+}
+
+/* Loader da marca: faixas que crescem em sequência */
+@keyframes carregar-faixa {
+  0%, 100% { transform: scaleX(0.3); opacity: 0.4; }
+  45%      { transform: scaleX(1); opacity: 1; }
+}
+
+/* Barras (funil, progresso) crescem da esquerda ao aparecer */
+@keyframes crescer {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* Entrada em sequência dos itens de uma lista ou grade: <ul className="em-sequencia"> */
+.em-sequencia > * {
+  animation: rise 0.6s var(--ease-brand) both;
+}
+.em-sequencia > *:nth-child(2) { animation-delay: 60ms; }
+.em-sequencia > *:nth-child(3) { animation-delay: 120ms; }
+.em-sequencia > *:nth-child(4) { animation-delay: 180ms; }
+.em-sequencia > *:nth-child(5) { animation-delay: 240ms; }
+.em-sequencia > *:nth-child(6) { animation-delay: 300ms; }
+.em-sequencia > *:nth-child(n + 7) { animation-delay: 340ms; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -216,7 +269,7 @@
 /* Variante para superfícies escuras */
 .logo-on-dark {
   --sb-logo-ink: #ffffff;
-  --sb-logo-blue: #7ba9ff;
+  --sb-logo-blue: #4f8bff; /* versão "reversa" do manual */
 }
 
 /* O wrapper define a altura; o SVG acompanha e a largura sai da
@@ -235,90 +288,100 @@
    Base Styles
    =================================================================== */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Em @layer base: assim as classes utilitárias do Tailwind (ex.: text-on-primary
+   num link com cara de botão) vencem estas regras. CSS fora de camada sempre
+   venceria as utilitárias, e o link herdava a cor do texto ao redor. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-body {
-  margin: 0;
-  background-color: var(--color-surface);
-  color: var(--color-on-surface);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
-}
+  body {
+    margin: 0;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* palavra longa demais (URL, nome sem espaço) quebra em vez de vazar do cartão */
+    overflow-wrap: break-word;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+  }
 
-h1, h2, h3, h4 {
-  /* No fundo claro o peso 400 do M3 lê fraco demais nos títulos
-     grandes; 500 recupera a hierarquia sem virar negrito. */
-  font-weight: 500;
-  text-wrap: balance;
-}
+  /* Títulos em Montserrat (manual: Bold/ExtraBold); o peso vem do token
+     de texto de cada um (text-headline-*, text-title-*). */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
 
-#root {
-  min-height: 100vh;
-}
+  /* Números (XP, contagens, porcentagens) alinhados em coluna */
+  .tabular { font-variant-numeric: tabular-nums; }
 
-::selection {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-}
+  #root {
+    min-height: 100vh;
+  }
 
-/* ===================================================================
-   Ícones — Material Symbols (SVG individuais, ver components/ui/Icon.jsx)
-   =================================================================== */
+  ::selection {
+    background: var(--color-brand-green);
+    color: var(--color-brand-navy);
+  }
 
-.icon {
-  display: inline-block;
-  width: 1.25em;
-  height: 1.25em;
-  flex-shrink: 0;
-}
-.icon svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+  /* ===================================================================
+     Ícones — Material Symbols (SVG individuais, ver components/ui/Icon.jsx)
+     =================================================================== */
 
-/* ===================================================================
-   Scrollbar
-   =================================================================== */
+  .icon {
+    display: inline-block;
+    width: 1.25em;
+    height: 1.25em;
+    flex-shrink: 0;
+  }
+  .icon svg { display: block; width: 100%; height: 100%; fill: currentColor; }
 
-::-webkit-scrollbar {
-  width: 8px;
-}
+  /* ===================================================================
+     Scrollbar
+     =================================================================== */
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-outline-variant);
-  border-radius: 4px;
-}
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-outline);
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-outline-variant);
+    border-radius: 4px;
+  }
 
-/* ===================================================================
-   Interactive Elements
-   =================================================================== */
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-outline);
+  }
 
-button {
-  cursor: pointer;
-  font-family: inherit;
-}
+  /* ===================================================================
+     Interactive Elements
+     =================================================================== */
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
-}
+  button {
+    cursor: pointer;
+    font-family: inherit;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }

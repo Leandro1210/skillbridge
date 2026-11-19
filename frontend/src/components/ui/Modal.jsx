@@ -47,7 +47,7 @@ export default function Modal({ open, onClose, title, children }) {
     <dialog
       ref={dialogRef}
       aria-label={title}
-      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-[var(--radius-xl)] bg-surface-container-lowest p-0 text-inherit shadow-[var(--shadow-elevation-3)] animate-[var(--animate-rise)] backdrop:bg-scrim/40"
+      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-[var(--radius-xl)] bg-surface-container-lowest p-0 text-inherit shadow-[var(--shadow-elevation-3)] animate-[var(--animate-scale-in)] backdrop:bg-scrim/45 backdrop:backdrop-blur-sm"
     >
       <div className="p-6">
         {title && (

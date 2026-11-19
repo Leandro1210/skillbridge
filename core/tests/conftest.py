@@ -1,4 +1,5 @@
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from core.models import Empresa, Etapa, Inscricao, Projeto, Usuario
@@ -46,9 +47,12 @@ def outro_estudante(db):
 
 @pytest.fixture
 def projeto(empresa):
+    """Vaga + desafio publicados, sem prazo, com uma etapa."""
     projeto = Projeto.objects.create(
-        empresa=empresa, titulo='API REST', descricao='...', ferramentas='Python, Django',
-        dificuldade='medio', nivel_minimo=0,
+        empresa=empresa, vaga_titulo='Estágio Back-end', vaga_modalidade='remoto',
+        vaga_descricao='Apoio no desenvolvimento das APIs.', vaga_tecnologias='Python, SQL',
+        titulo='API REST', descricao='...', ferramentas='Python, Django',
+        dificuldade='intermediario', status='publicado', publicado_em=timezone.now(),
     )
     Etapa.objects.create(projeto=projeto, ordem=1, descricao='Etapa 1', criterios_tecnicos='...')
     return projeto

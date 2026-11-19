@@ -7,8 +7,11 @@ from core.models import (
     Habilidade,
     HabilidadeUsuario,
     Inscricao,
+    LancamentoXP,
     PerfilUsuario,
     Projeto,
+    ProjetoAcademico,
+    Publicacao,
     RequisitoVaga,
     Usuario,
     Vaga,
@@ -38,16 +41,16 @@ class RequisitoVagaInline(admin.TabularInline):
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'email', 'nivel', 'xp_total', 'taxa_sucesso']
+    list_display = ['nome', 'email', 'empresa', 'date_joined']
     search_fields = ['nome', 'email']
-    list_filter = ['nivel']
+    list_filter = ['empresa']
     inlines = [PerfilUsuarioInline]
 
 
 @admin.register(Projeto)
 class ProjetoAdmin(admin.ModelAdmin):
-    list_display = ['titulo', 'dificuldade', 'nivel_minimo', 'created_at']
-    list_filter = ['dificuldade', 'nivel_minimo']
+    list_display = ['titulo', 'empresa', 'status', 'dificuldade', 'prazo', 'created_at']
+    list_filter = ['status', 'dificuldade']
     search_fields = ['titulo']
     inlines = [EtapaInline]
 
@@ -60,10 +63,31 @@ class EtapaAdmin(admin.ModelAdmin):
 
 @admin.register(Entrega)
 class EntregaAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'etapa', 'status', 'xp_ganho', 'entregue_em']
+    list_display = ['usuario', 'etapa', 'status', 'entregue_em']
     list_filter = ['status']
     search_fields = ['usuario__nome']
     readonly_fields = ['entregue_em']
+
+
+@admin.register(ProjetoAcademico)
+class ProjetoAcademicoAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'usuario', 'disciplina', 'periodo', 'destaque', 'criado_em']
+    list_filter = ['destaque']
+    search_fields = ['titulo', 'usuario__nome', 'repo_url']
+
+
+@admin.register(Publicacao)
+class PublicacaoAdmin(admin.ModelAdmin):
+    list_display = ['titulo', 'usuario', 'tipo', 'ano', 'criado_em']
+    list_filter = ['tipo']
+    search_fields = ['titulo', 'usuario__nome']
+
+
+@admin.register(LancamentoXP)
+class LancamentoXPAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'origem', 'xp', 'temporada', 'referencia', 'criado_em']
+    list_filter = ['temporada', 'origem']
+    search_fields = ['usuario__nome', 'usuario__email']
 
 
 @admin.register(Inscricao)

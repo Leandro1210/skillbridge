@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
@@ -8,7 +9,7 @@ import Modal from './ui/Modal';
 import Skeleton from './ui/Skeleton';
 import PageHeader from './ui/PageHeader';
 import { List, ListItem } from './ui/ListItem';
-import { Textarea } from './ui/Input';
+import { Input, Select, Textarea } from './ui/Input';
 
 const STATUS_META = {
   pendente: { icon: 'schedule', tone: 'warning', label: 'Pendente' },
@@ -31,6 +32,11 @@ export default function CompanySubmissions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('pendente');
+  const [desafioFilter, setDesafioFilter] = useState('');
+  const [busca, setBusca] = useState('');
+  const [buscaAplicada, setBuscaAplicada] = useState('');
+  const [desafios, setDesafios] = useState([]);
+  const [carregouUmaVez, setCarregouUmaVez] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [feedback, setFeedback] = useState('');
   const [evaluationStatus, setEvaluationStatus] = useState('aprovado');
@@ -38,8 +44,11 @@ export default function CompanySubmissions() {
   const loadSubmissions = useCallback(async () => {
     try {
       setLoading(true);
-      const query = statusFilter ? `?status=${statusFilter}` : '';
-      const { data } = await api.get(`/empresa/submissoes/${query}`);
+      const params = {};
+      if (statusFilter) params.status = statusFilter;
+      if (desafioFilter) params.desafio = desafioFilter;
+      if (buscaAplicada) params.q = buscaAplicada;
+      const { data } = await api.get('/empresa/submissoes/', { params });
       setSubmissions(data.results ?? data);
       setError('');
     } catch (err) {
@@ -47,12 +56,20 @@ export default function CompanySubmissions() {
       setError('Erro ao carregar submissões');
     } finally {
       setLoading(false);
+      setCarregouUmaVez(true);
     }
-  }, [statusFilter]);
+  }, [statusFilter, desafioFilter, buscaAplicada]);
 
   useEffect(() => {
     void loadSubmissions();
   }, [loadSubmissions]);
+
+  // desafios da empresa, para o filtro "Desafio"
+  useEffect(() => {
+    api.get('/empresa/projetos/')
+      .then(({ data }) => setDesafios(data.results ?? data))
+      .catch(() => setDesafios([]));
+  }, []);
 
   const handleEvaluate = async () => {
     if (!selectedSubmission) return;
@@ -70,7 +87,8 @@ export default function CompanySubmissions() {
     }
   };
 
-  if (loading) {
+  // esqueleto só na primeira carga: ao trocar filtros, a tela (e os filtros) ficam no lugar
+  if (loading && !carregouUmaVez) {
     return (
       <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="space-y-8">
@@ -111,8 +129,30 @@ export default function CompanySubmissions() {
         ))}
       </div>
 
+      <form
+        role="search"
+        className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setBuscaAplicada(busca.trim());
+        }}
+      >
+        <div className="sm:w-64">
+          <Select label="Desafio" value={desafioFilter} onChange={(e) => setDesafioFilter(e.target.value)}>
+            <option value="">Todos os desafios</option>
+            {desafios.map((d) => <option key={d.id} value={d.id}>{d.titulo}</option>)}
+          </Select>
+        </div>
+        <div className="flex-1">
+          <Input label="Candidato" type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome ou e-mail" />
+        </div>
+        <Button type="submit" variant="outlined">
+          <Icon name="search" size="1.1rem" /> Buscar
+        </Button>
+      </form>
+
       {submissions.length > 0 ? (
-        <List>
+        <List className="em-sequencia">
           {submissions.map((submission) => {
             const meta = STATUS_META[submission.status] ?? STATUS_META.pendente;
             return (
@@ -124,10 +164,16 @@ export default function CompanySubmissions() {
                   </div>
                 }
                 trailing={<Badge tone={meta.tone} dot>{meta.label}</Badge>}
-                title={submission.usuario.nome}
+                title={
+                  <Link to={`/alunos/${submission.usuario.id}`} className="hover:underline">
+                    {submission.usuario.nome}
+                  </Link>
+                }
               >
                 <p className="text-body-small text-on-surface-variant">{submission.usuario.email}</p>
-                <p className="mt-0.5 text-body-small font-medium text-primary">Etapa: {submission.etapa.descricao}</p>
+                <p className="mt-0.5 text-body-small font-medium text-primary">
+                  {submission.desafio.titulo} · Etapa {submission.etapa.ordem}: {submission.etapa.descricao}
+                </p>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-body-small text-on-surface-variant">
                   {submission.repo_url && (
@@ -144,11 +190,6 @@ export default function CompanySubmissions() {
                     <Icon name="calendar_today" size="0.9rem" />
                     {new Date(submission.entregue_em).toLocaleDateString('pt-BR')}
                   </span>
-                  {submission.xp_ganho > 0 && (
-                    <span className="inline-flex items-center gap-1.5 font-medium text-primary">
-                      <Icon name="stars" size="0.9rem" /> {submission.xp_ganho} XP concedidos
-                    </span>
-                  )}
                 </div>
 
                 {submission.feedback_validacao && (
@@ -240,7 +281,7 @@ export default function CompanySubmissions() {
               <div className="rounded-[var(--radius-sm)] border border-primary/30 bg-primary-container/20 p-4">
                 <p className="flex items-center gap-2 text-body-medium font-medium text-primary">
                   <Icon name="stars" size="1.1rem" />
-                  O estudante receberá pontos de XP pela conclusão desta etapa!
+                  A aprovação entra na contagem de aprovações do perfil do estudante.
                 </p>
               </div>
             )}

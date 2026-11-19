@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import api from '../api';
 import { setTokens, clearTokens } from '../auth';
-import Card from './ui/Card';
+import Grafismo from './ui/Grafismo';
+import Spinner from './ui/Spinner';
 import Button from './ui/Button';
 import Logo from './ui/Logo';
 import { Input } from './ui/Input';
@@ -103,30 +104,43 @@ export default function AuthPage({ onLogin }) {
   if (loading) submitLabel = 'Carregando...';
 
   return (
-    // Véu suave com o azul da marca aplicado na própria superfície: dá
-    // profundidade ao branco sem virar decoração colorida.
-    <div
-      className="flex min-h-screen items-center justify-center px-4 py-10"
-      style={{
-        backgroundColor: 'var(--color-surface)',
-        backgroundImage:
-          'radial-gradient(ellipse 80% 60% at 50% -10%, var(--color-primary-container), transparent 65%)',
-      }}
-    >
-      <Card padding="lg" className="w-full max-w-md animate-[var(--animate-fade-in)]">
-        <div className="mb-7 flex flex-col items-center text-center">
-          <Logo variant="lockup" height="2.5rem" className="mb-4" />
-          <p className="text-body-medium text-on-surface-variant">
+    <div className="grid min-h-screen bg-surface lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      {/* Painel da marca: Azul Bridge, título em Montserrat e as faixas */}
+      <section
+        aria-label="SkillBridge"
+        className="relative isolate flex min-h-[15rem] flex-col justify-end overflow-hidden bg-brand-blue px-6 py-8 text-white sm:px-10 lg:min-h-screen lg:px-14 lg:py-12"
+      >
+        <Grafismo variante="ponte" tom="azul" className="absolute right-4 top-4 -z-10 h-24 sm:right-8 sm:top-6 sm:h-36 lg:right-12 lg:top-12 lg:h-auto lg:w-[min(70%,26rem)]" />
+        <div className="mt-10 max-w-md animate-[var(--animate-rise)] lg:mt-0">
+          <p className="font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-[2.6rem] lg:text-[3.2rem]">
+            Mostre o que você já construiu.
+          </p>
+          <p className="mt-4 max-w-sm text-body-large text-white/85">
+            Projetos, artigos e desafios. Um perfil que fala por você.
+          </p>
+        </div>
+      </section>
+
+      {/* Formulário */}
+      <div className="flex items-start justify-center px-4 py-10 sm:px-8 lg:items-center">
+      <div className="w-full max-w-md animate-[var(--animate-rise)] [animation-delay:120ms]">
+        {/* logo nas cores principais, sobre o branco: no azul ela perdia contraste */}
+        <Logo variant="lockup" height="2.5rem" className="mb-10" />
+        <div className="mb-7">
+          <h1 className="text-headline-medium text-on-surface">
+            {isRegister ? 'Crie sua conta' : 'Boas-vindas de volta'}
+          </h1>
+          <p className="mt-1 text-body-medium text-on-surface-variant">
             {isRegister ? 'Crie sua conta para começar' : 'Entre na sua conta'}
           </p>
         </div>
 
-        <div className="mb-6 flex rounded-full bg-surface-container-highest p-1">
+        <div className="mb-6 flex rounded-full bg-surface-container-high p-1">
           <button
             type="button"
             onClick={() => setIsCompany(false)}
-            className={`w-1/2 rounded-full py-2 text-label-large transition-all ${
-              !isCompany ? 'bg-primary text-on-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
+            className={`w-1/2 rounded-full py-2.5 text-label-large transition-all duration-300 ${
+              !isCompany ? 'bg-surface-container-lowest text-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Sou Estudante
@@ -134,8 +148,8 @@ export default function AuthPage({ onLogin }) {
           <button
             type="button"
             onClick={() => setIsCompany(true)}
-            className={`w-1/2 rounded-full py-2 text-label-large transition-all ${
-              isCompany ? 'bg-primary text-on-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
+            className={`w-1/2 rounded-full py-2.5 text-label-large transition-all duration-300 ${
+              isCompany ? 'bg-surface-container-lowest text-primary shadow-[var(--shadow-elevation-1)]' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             Sou Empresa
@@ -224,7 +238,8 @@ export default function AuthPage({ onLogin }) {
             />
           )}
 
-          <Button type="submit" variant="filled" disabled={loading} className="w-full">
+          <Button type="submit" variant="filled" size="lg" disabled={loading} className="w-full">
+            {loading && <Spinner size="sm" className="[&_circle:first-child]:stroke-white/30" />}
             {submitLabel}
           </Button>
         </form>
@@ -242,7 +257,8 @@ export default function AuthPage({ onLogin }) {
             {isRegister ? 'Fazer login' : 'Criar conta'}
           </button>
         </p>
-      </Card>
+      </div>
+      </div>
     </div>
   );
 }

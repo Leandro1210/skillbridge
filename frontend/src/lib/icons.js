@@ -59,6 +59,24 @@ import thumbUp from '@material-symbols/svg-400/rounded/thumb_up.svg?raw';
 import thumbDown from '@material-symbols/svg-400/rounded/thumb_down.svg?raw';
 import feedback from '@material-symbols/svg-400/rounded/feedback.svg?raw';
 
+import home from '@material-symbols/svg-400/rounded/home.svg?raw';
+import article from '@material-symbols/svg-400/rounded/article.svg?raw';
+import locationOn from '@material-symbols/svg-400/rounded/location_on.svg?raw';
+import call from '@material-symbols/svg-400/rounded/call.svg?raw';
+import language from '@material-symbols/svg-400/rounded/language.svg?raw';
+import history from '@material-symbols/svg-400/rounded/history.svg?raw';
+import barChart from '@material-symbols/svg-400/rounded/bar_chart.svg?raw';
+import workspacePremium from '@material-symbols/svg-400/rounded/workspace_premium.svg?raw';
+import apartment from '@material-symbols/svg-400/rounded/apartment.svg?raw';
+import calendarMonth from '@material-symbols/svg-400/rounded/calendar_month.svg?raw';
+import filterList from '@material-symbols/svg-400/rounded/filter_list.svg?raw';
+import accountCircle from '@material-symbols/svg-400/rounded/account_circle.svg?raw';
+import event from '@material-symbols/svg-400/rounded/event.svg?raw';
+import groupIcon from '@material-symbols/svg-400/rounded/group.svg?raw';
+import hourglassEmpty from '@material-symbols/svg-400/rounded/hourglass_empty.svg?raw';
+
+import check from '@material-symbols/svg-400/rounded/check.svg?raw';
+
 export const ICONS = {
   bolt,
   hub,
@@ -110,4 +128,20 @@ export const ICONS = {
   thumb_up: thumbUp,
   thumb_down: thumbDown,
   feedback,
+  home,
+  article,
+  location_on: locationOn,
+  call,
+  language,
+  history,
+  bar_chart: barChart,
+  workspace_premium: workspacePremium,
+  apartment,
+  calendar_month: calendarMonth,
+  filter_list: filterList,
+  account_circle: accountCircle,
+  event,
+  group: groupIcon,
+  hourglass_empty: hourglassEmpty,
+  check,
 };

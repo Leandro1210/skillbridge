@@ -2,13 +2,21 @@
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
+
+# Rótulos (verbose_name) repetidos em vários models.
+ROTULO_TITULO = 'Título'
+ROTULO_DESCRICAO = 'Descrição'
+ROTULO_CRIADO_EM = 'Criado em'
 
 
 class Dificuldade(models.TextChoices):
-    FACIL = 'facil', 'Fácil'
-    MEDIO = 'medio', 'Médio'
-    DIFICIL = 'dificil', 'Difícil'
+    """Nível do desafio — para quem ele foi pensado."""
+    INICIANTE = 'iniciante', 'Iniciante'
+    INTERMEDIARIO = 'intermediario', 'Intermediário'
+    AVANCADO = 'avancado', 'Avançado'
 
 
 class FormatoEntrega(models.TextChoices):
@@ -32,6 +40,12 @@ class TipoVaga(models.TextChoices):
 class TipoHabilidade(models.TextChoices):
     HARD = 'hard', 'Hard Skill'
     SOFT = 'soft', 'Soft Skill'
+
+
+class StatusDesafio(models.TextChoices):
+    RASCUNHO = 'rascunho', 'Rascunho'
+    PUBLICADO = 'publicado', 'Publicado'
+    ENCERRADO = 'encerrado', 'Encerrado'
 
 
 class StatusInscricao(models.TextChoices):
@@ -63,13 +77,6 @@ class Usuario(AbstractUser):
         blank=True,
         help_text='Se preenchido, este usuário representa a empresa.',
     )
-    nivel = models.PositiveIntegerField('Nível', default=1)
-    xp_total = models.PositiveIntegerField('XP Total', default=0, db_index=True)
-    taxa_sucesso = models.FloatField(
-        'Taxa de Sucesso (%)',
-        default=0.0,
-        help_text='Percentual de entregas aprovadas sobre o total.',
-    )
 
     # Usa e-mail como identificador de login
     USERNAME_FIELD = 'email'
@@ -78,31 +85,14 @@ class Usuario(AbstractUser):
     class Meta:
         verbose_name = 'Usuário'
         verbose_name_plural = 'Usuários'
-        ordering = ['-xp_total']
+        ordering = ['nome']
 
     def __str__(self):
-        return f'{self.nome} (Nv. {self.nivel})'
-
-    def recalcular_nivel(self, save=True):
-        """Recalcula o nível com base no XP total (1 nível a cada 1000 XP)."""
-        self.nivel = 1 + (self.xp_total // 1000)
-        if save:
-            self.save(update_fields=['nivel'])
-
-    def recalcular_taxa_sucesso(self, save=True):
-        """Recalcula a taxa de sucesso baseada nas entregas."""
-        total = self.entregas.exclude(status=StatusEntrega.PENDENTE).count()
-        if total > 0:
-            aprovadas = self.entregas.filter(status=StatusEntrega.APROVADO).count()
-            self.taxa_sucesso = round((aprovadas / total) * 100, 2)
-        else:
-            self.taxa_sucesso = 0.0
-        if save:
-            self.save(update_fields=['taxa_sucesso'])
+        return self.nome
 
 
 class PerfilUsuario(models.Model):
-    """Perfil estendido com informações profissionais (relação 1:1)."""
+    """Perfil acadêmico do aluno (relação 1:1): o que a empresa consulta ao avaliar."""
     usuario = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -131,6 +121,33 @@ class PerfilUsuario(models.Model):
         default='',
         help_text='Informações adicionais sobre você.',
     )
+    certificados = models.TextField(
+        'Certificados',
+        blank=True,
+        default='',
+        help_text='Cursos e certificações, descritos livremente pelo aluno.',
+    )
+    curso = models.CharField('Curso', max_length=200, blank=True, default='')
+    periodo_atual = models.PositiveSmallIntegerField(
+        'Período atual',
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+    )
+    estudando_atualmente = models.CharField(
+        'Estudando atualmente',
+        max_length=300,
+        blank=True,
+        default='',
+        help_text='Disciplinas ou assuntos do semestre (ex.: Estruturas de Dados, React).',
+    )
+    github_url = models.URLField('GitHub', blank=True, default='')
+    linkedin_url = models.URLField('LinkedIn', blank=True, default='')
+    mostrar_atividade = models.BooleanField(
+        'Mostrar atividade para empresas',
+        default=False,
+        help_text='Se ligado, as empresas veem o XP e o gráfico de atividade do semestre.',
+    )
 
     class Meta:
         verbose_name = 'Perfil de Usuário'
@@ -140,10 +157,82 @@ class PerfilUsuario(models.Model):
         return f'Perfil de {self.usuario.nome}'
 
 
+class ProjetoAcademico(models.Model):
+    """Projeto feito numa disciplina, com o repositório como evidência."""
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='projetos_academicos',
+        verbose_name='Usuário',
+    )
+    titulo = models.CharField(ROTULO_TITULO, max_length=200)
+    disciplina = models.CharField('Disciplina', max_length=200, blank=True, default='')
+    periodo = models.PositiveSmallIntegerField(
+        'Período', null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(12)],
+    )
+    repo_url = models.URLField('Repositório')
+    tecnologias = models.CharField('Tecnologias', max_length=300, blank=True, default='')
+    descricao = models.TextField(ROTULO_DESCRICAO, blank=True, default='')
+    destaque = models.BooleanField('Destaque', default=False, help_text='Aparece primeiro no perfil.')
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Projeto acadêmico'
+        verbose_name_plural = 'Projetos acadêmicos'
+        ordering = ['-destaque', '-criado_em']
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'repo_url'], name='repositorio_unico_por_aluno'),
+        ]
+
+    def __str__(self):
+        return f'{self.titulo} ({self.usuario.nome})'
+
+
+class TipoPublicacao(models.TextChoices):
+    ARTIGO = 'artigo', 'Artigo'
+    RESUMO = 'resumo', 'Resumo em evento'
+    TCC = 'tcc', 'TCC'
+    INICIACAO_CIENTIFICA = 'iniciacao_cientifica', 'Iniciação científica'
+    OUTRO = 'outro', 'Outro'
+
+
+class Publicacao(models.Model):
+    """Produção científica do aluno (artigo, resumo, TCC...), com link ou DOI."""
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='publicacoes',
+        verbose_name='Usuário',
+    )
+    titulo = models.CharField(ROTULO_TITULO, max_length=300)
+    tipo = models.CharField('Tipo', max_length=25, choices=TipoPublicacao.choices, default=TipoPublicacao.ARTIGO)
+    veiculo = models.CharField('Evento ou periódico', max_length=300, blank=True, default='')
+    ano = models.PositiveSmallIntegerField('Ano', null=True, blank=True)
+    url = models.URLField('Link ou DOI')
+    coautores = models.CharField('Coautores', max_length=500, blank=True, default='')
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Publicação'
+        verbose_name_plural = 'Publicações'
+        ordering = ['-ano', '-criado_em']
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'url'], name='publicacao_unica_por_aluno'),
+        ]
+
+    def __str__(self):
+        return f'{self.titulo} ({self.get_tipo_display()})'
+
+
 # Projeto, etapa e entrega
 
 class Projeto(models.Model):
-    """Projeto de aprendizado com etapas progressivas."""
+    """
+    Processo seletivo publicado por uma empresa: a VAGA que ela oferece (o que
+    o aluno vê no feed) e o DESAFIO que testa o que a vaga pede (o que ele vê
+    ao abrir e resolve em etapas). O desafio não precisa repetir a vaga — é
+    algo relacionado, para avaliar o conhecimento do candidato.
+    """
     empresa = models.ForeignKey(
         'Empresa',
         on_delete=models.CASCADE,
@@ -153,49 +242,76 @@ class Projeto(models.Model):
         blank=True,
         help_text='Empresa responsável por este desafio (opcional).',
     )
-    titulo = models.CharField('Título', max_length=300)
-    descricao = models.TextField('Descrição')
+    # A vaga
+    vaga_titulo = models.CharField(
+        'Título da vaga', max_length=200, blank=True, default='',
+        help_text='Ex.: Estágio em Desenvolvimento Back-end.',
+    )
+    vaga_modalidade = models.CharField(
+        'Modalidade', max_length=12, choices=TipoVaga.choices, blank=True, default='',
+    )
+    vaga_descricao = models.TextField(
+        'Descrição da vaga', blank=True, default='',
+        help_text='Atividades, o que a empresa oferece, como é o dia a dia.',
+    )
+    vaga_tecnologias = models.CharField(
+        'Tecnologias esperadas', max_length=500, blank=True, default='',
+        help_text='O que a empresa espera que o aluno saiba (separadas por vírgula).',
+    )
+
+    # O desafio
+    titulo = models.CharField('Título do desafio', max_length=300)
+    descricao = models.TextField('Enunciado do desafio')
     ferramentas = models.CharField(
         'Ferramentas',
         max_length=500,
-        help_text='Lista de ferramentas separadas por vírgula.',
+        help_text='Ferramentas para resolver o desafio, separadas por vírgula.',
     )
     dificuldade = models.CharField(
-        'Dificuldade',
-        max_length=10,
+        'Nível',
+        max_length=15,
         choices=Dificuldade.choices,
-        default=Dificuldade.MEDIO,
+        default=Dificuldade.INTERMEDIARIO,
     )
-    nivel_minimo = models.PositiveIntegerField(
-        'Nível mínimo',
-        default=0,
-        help_text='Nível mínimo do usuário para acessar este projeto.',
-    )
-    ativo = models.BooleanField(
-        'Ativo',
-        default=True,
+    # Ciclo de vida de um processo seletivo: a empresa prepara (rascunho),
+    # abre para participações (publicado) e encerra. Desafios ficam abertos a
+    # todos os alunos — quem avalia se o aluno está apto é a empresa.
+    status = models.CharField(
+        'Status',
+        max_length=10,
+        choices=StatusDesafio.choices,
+        default=StatusDesafio.RASCUNHO,
         db_index=True,
-        help_text='Se desativado, estudantes não podem se inscrever.',
     )
-    created_at = models.DateTimeField('Criado em', auto_now_add=True)
+    publicado_em = models.DateTimeField('Publicado em', null=True, blank=True)
+    prazo = models.DateField(
+        'Prazo',
+        null=True,
+        blank=True,
+        help_text='Último dia para participar e enviar entregas (opcional).',
+    )
+    periodo_recomendado = models.PositiveSmallIntegerField(
+        'Período recomendado',
+        null=True,
+        blank=True,
+        help_text='Período do curso a partir do qual o desafio é recomendado. Só informativo, não bloqueia.',
+    )
+    created_at = models.DateTimeField(ROTULO_CRIADO_EM, auto_now_add=True)
 
     class Meta:
         verbose_name = 'Projeto'
         verbose_name_plural = 'Projetos'
-        ordering = ['nivel_minimo', 'titulo']
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.titulo} [{self.get_dificuldade_display()}]'
 
     @property
-    def xp_por_etapa(self):
-        """XP concedido por etapa concluída, baseado na dificuldade."""
-        mapa = {
-            Dificuldade.FACIL: 100,
-            Dificuldade.MEDIO: 250,
-            Dificuldade.DIFICIL: 500,
-        }
-        return mapa.get(self.dificuldade, 100)
+    def aceita_entregas(self):
+        """Publicado e dentro do prazo (se houver prazo)."""
+        if self.status != StatusDesafio.PUBLICADO:
+            return False
+        return self.prazo is None or self.prazo >= timezone.localdate()
 
 
 class Inscricao(models.Model):
@@ -239,7 +355,7 @@ class Etapa(models.Model):
         verbose_name='Projeto',
     )
     ordem = models.PositiveIntegerField('Ordem')
-    descricao = models.TextField('Descrição')
+    descricao = models.TextField(ROTULO_DESCRICAO)
     criterios_tecnicos = models.TextField(
         'Critérios técnicos',
         help_text='Critérios que a entrega deve satisfazer para ser aprovada.',
@@ -294,7 +410,6 @@ class Entrega(models.Model):
         blank=True,
         default='',
     )
-    xp_ganho = models.PositiveIntegerField('XP ganho', default=0)
     entregue_em = models.DateTimeField('Entregue em', auto_now_add=True)
 
     class Meta:
@@ -309,13 +424,59 @@ class Entrega(models.Model):
         )
 
 
+# XP de atividade
+
+class OrigemXP(models.TextChoices):
+    ACESSO_DIARIO = 'acesso_diario', 'Acesso diário'
+    PERFIL_SEMESTRE = 'perfil_semestre', 'Perfil atualizado no semestre'
+    PROJETO_ACADEMICO = 'projeto_academico', 'Projeto acadêmico'
+    PUBLICACAO = 'publicacao', 'Publicação'
+    PARTICIPACAO_DESAFIO = 'participacao_desafio', 'Participação em desafio'
+    AVALIACAO_RECEBIDA = 'avaliacao_recebida', 'Avaliação recebida'
+
+
+class LancamentoXP(models.Model):
+    """
+    Um ganho de XP de atividade. O XP mede comprometimento no semestre (não
+    competência) e é a soma dos lançamentos da temporada — as regras ficam em
+    core/xp.py. A restrição de unicidade impede ganhar duas vezes pela mesma
+    coisa (o mesmo desafio, o mesmo dia de acesso...).
+    """
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='lancamentos_xp',
+        verbose_name='Usuário',
+    )
+    origem = models.CharField('Origem', max_length=25, choices=OrigemXP.choices)
+    referencia = models.CharField(
+        'Referência',
+        max_length=100,
+        help_text='O que gerou o XP: a data do acesso, o id do desafio, a temporada...',
+    )
+    xp = models.PositiveIntegerField('XP')
+    temporada = models.CharField('Temporada', max_length=6, db_index=True, help_text='Ex.: 2026.2')
+    criado_em = models.DateTimeField(ROTULO_CRIADO_EM, default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = 'Lançamento de XP'
+        verbose_name_plural = 'Lançamentos de XP'
+        ordering = ['-criado_em']
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'origem', 'referencia'], name='xp_unico_por_origem_e_referencia'),
+        ]
+
+    def __str__(self):
+        return f'{self.usuario.nome} +{self.xp} XP ({self.get_origem_display()}, {self.temporada})'
+
+
 # Mercado: empresa, vaga, habilidade
 
 class Empresa(models.Model):
     """Empresa que publica vagas na plataforma."""
     nome = models.CharField('Nome', max_length=300)
     setor = models.CharField('Setor', max_length=200)
-    descricao = models.TextField('Descrição', blank=True, default='')
+    descricao = models.TextField(ROTULO_DESCRICAO, blank=True, default='')
 
     class Meta:
         verbose_name = 'Empresa'
@@ -327,7 +488,7 @@ class Empresa(models.Model):
 
 
 class PerfilEmpresa(models.Model):
-    """Perfil estendido da empresa com informações adicionais (relação 1:1)."""
+    """Perfil público da empresa: área, contatos e redes (relação 1:1)."""
     empresa = models.OneToOneField(
         Empresa,
         on_delete=models.CASCADE,
@@ -359,6 +520,14 @@ class PerfilEmpresa(models.Model):
         default='',
         help_text='Informações adicionais sobre a empresa, cultura, etc.',
     )
+    # A logo é um link (e não upload): o disco do servidor de deploy é efêmero.
+    logo_url = models.URLField('Logo (URL da imagem)', blank=True, default='')
+    email_contato = models.EmailField('E-mail de contato', blank=True, default='')
+    telefone = models.CharField('Telefone', max_length=30, blank=True, default='')
+    cidade = models.CharField('Cidade', max_length=150, blank=True, default='', help_text='Ex.: Anápolis, GO — ou "Remoto".')
+    linkedin_url = models.URLField('LinkedIn', blank=True, default='')
+    instagram_url = models.URLField('Instagram', blank=True, default='')
+    github_url = models.URLField('GitHub', blank=True, default='')
 
     class Meta:
         verbose_name = 'Perfil de Empresa'
@@ -376,7 +545,7 @@ class Vaga(models.Model):
         related_name='vagas',
         verbose_name='Empresa',
     )
-    titulo = models.CharField('Título', max_length=300)
+    titulo = models.CharField(ROTULO_TITULO, max_length=300)
     tipo = models.CharField(
         'Tipo',
         max_length=12,

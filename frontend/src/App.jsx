@@ -1,36 +1,53 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import './index.css';
 import AuthPage from './components/AuthPage';
-import Dashboard from './components/Dashboard';
-import ProjectCatalog from './components/ProjectCatalog';
-import ProjectWorkspace from './components/ProjectWorkspace';
+import FeedPage from './components/FeedPage';
+import DesafioPage from './components/DesafioPage';
 import CompanyDashboard from './components/CompanyDashboard';
 import CompanyChallenges from './components/CompanyChallenges';
 import CompanySubmissions from './components/CompanySubmissions';
-import StudentProfileEdit from './components/StudentProfileEdit';
+import PerfilAlunoPage from './components/PerfilAlunoPage';
+import PerfilEditarPage from './components/PerfilEditarPage';
+import PerfilEmpresaPage from './components/PerfilEmpresaPage';
 import CompanyProfileEdit from './components/CompanyProfileEdit';
 import Shell from './components/Shell';
 import Button from './components/ui/Button';
-import Spinner from './components/ui/Spinner';
-import Icon from './components/ui/Icon';
+import Carregando from './components/ui/Carregando';
 import Logo from './components/ui/Logo';
 import api from './api';
+import { EVENTO_ATIVIDADE } from './lib/atividade';
 import { isLoggedIn as hasStoredToken, getRefreshToken, clearTokens } from './auth';
 
-const COMPANY_NAV = [
-  { page: 'company-dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { page: 'company-desafios', label: 'Desafios', icon: 'checklist' },
-  { page: 'company-submissoes', label: 'Submissões', icon: 'task_alt' },
-  { page: 'company-perfil', label: 'Perfil', icon: 'badge' },
+const NAV_ALUNO = [
+  { to: '/', label: 'Feed', icon: 'home', end: true },
+  { to: '/perfil', label: 'Meu perfil', icon: 'badge' },
 ];
+
+const NAV_EMPRESA = [
+  { to: '/empresa', label: 'Dashboard', icon: 'dashboard', end: true },
+  { to: '/empresa/desafios', label: 'Desafios', icon: 'checklist' },
+  { to: '/empresa/submissoes', label: 'Submissões', icon: 'task_alt' },
+  { to: '/empresa/perfil', label: 'Perfil', icon: 'badge' },
+];
+
+/**
+ * Acesso diário do aluno (+5 XP, uma vez por dia — o backend garante). Se
+ * rendeu XP, avisa a tela de atividade para recarregar. Falha não importa:
+ * é só atividade, não pode atrapalhar a entrada no app.
+ */
+function registrarAcessoDoDia() {
+  api.post('/atividade/acesso/')
+    .then(({ data }) => {
+      if (data.xp_ganho > 0) window.dispatchEvent(new Event(EVENTO_ATIVIDADE));
+    })
+    .catch(() => {});
+}
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(hasStoredToken);
-  const [activeProjectId, setActiveProjectId] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [userProfile, setUserProfile] = useState(null);
   const [profileError, setProfileError] = useState(false);
-  const [currentPage, setCurrentPage] = useState('dashboard');
   const [profileReloadToken, setProfileReloadToken] = useState(0);
 
   // Carrega perfil do usuário ao logar (ou quando profileReloadToken muda,
@@ -45,9 +62,7 @@ export default function App() {
         if (cancelled) return;
         setUserProfile(data);
         setProfileError(false);
-        if (data.empresa) {
-          setCurrentPage('company-dashboard');
-        }
+        if (!data.empresa) registrarAcessoDoDia();
       } catch (err) {
         if (cancelled) return;
         console.error('Erro ao carregar perfil:', err);
@@ -70,8 +85,8 @@ export default function App() {
   }, []);
 
   // O interceptor do axios dispara esse evento quando o refresh token
-  // falha/expira — sem router nessa SPA, resetamos o estado direto em
-  // vez de tentar navegar para uma rota "/login" que não existe.
+  // falha/expira — resetamos o estado direto, e a tela de login aparece
+  // em qualquer rota em que o usuário estiver.
   useEffect(() => {
     window.addEventListener('skillbridge:auth-logout', handleLogout);
     return () => window.removeEventListener('skillbridge:auth-logout', handleLogout);
@@ -109,83 +124,38 @@ export default function App() {
   // Se logado mas perfil ainda nao carregou, mostra loading
   if (!userProfile) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-surface">
-        <Logo variant="lockup" height="2rem" />
-        <div className="flex items-center gap-3">
-          <Spinner size="md" />
-          <span className="text-body-large text-on-surface-variant">Carregando…</span>
-        </div>
-      </div>
+      <Carregando telaCheia />
     );
   }
 
-  // Verifica se é usuário de empresa
-  const isCompanyUser = userProfile?.empresa !== null && userProfile?.empresa !== undefined;
+  const isCompanyUser = userProfile.empresa !== null && userProfile.empresa !== undefined;
 
-  // Renderiza shell da empresa
-  if (isCompanyUser && currentPage.startsWith('company')) {
+  if (isCompanyUser) {
     return (
-      <Shell
-        navItems={COMPANY_NAV.map((item) => ({ ...item, onClick: () => setCurrentPage(item.page) }))}
-        activePage={currentPage}
-        onLogoClick={() => setCurrentPage('company-dashboard')}
-        onLogout={handleLogoutClick}
-      >
-        {currentPage === 'company-dashboard' && <CompanyDashboard onNavigate={setCurrentPage} />}
-        {currentPage === 'company-desafios' && <CompanyChallenges />}
-        {currentPage === 'company-submissoes' && <CompanySubmissions />}
-        {currentPage === 'company-perfil' && (
-          <CompanyProfileEdit onBack={() => setCurrentPage('company-dashboard')} />
-        )}
+      <Shell navItems={NAV_EMPRESA} homePath="/empresa" onLogout={handleLogoutClick}>
+        <Routes>
+          <Route path="/empresa" element={<CompanyDashboard />} />
+          <Route path="/empresa/desafios" element={<CompanyChallenges />} />
+          <Route path="/empresa/submissoes" element={<CompanySubmissions />} />
+          <Route path="/empresa/perfil" element={<CompanyProfileEdit />} />
+          <Route path="/alunos/:id" element={<PerfilAlunoPage />} />
+          <Route path="/empresas/:id" element={<PerfilEmpresaPage />} />
+          <Route path="*" element={<Navigate to="/empresa" replace />} />
+        </Routes>
       </Shell>
     );
   }
 
-  // Shell do estudante
-  let studentContent;
-
-  if (currentPage === 'student-perfil') {
-    studentContent = <StudentProfileEdit onBack={() => setCurrentPage('dashboard')} />;
-  } else if (activeProjectId) {
-    studentContent = (
-      <ProjectWorkspace
-        projectId={activeProjectId}
-        onBack={() => {
-          setActiveProjectId(null);
-          setRefreshKey((prev) => prev + 1);
-        }}
-      />
-    );
-  } else {
-    studentContent = (
-      <>
-        <Dashboard key={refreshKey} onContinueProject={(id) => setActiveProjectId(id)} />
-        <div className="mx-auto my-12 h-px max-w-7xl bg-outline-variant" />
-        <ProjectCatalog onProjectStarted={() => setRefreshKey((prev) => prev + 1)} />
-      </>
-    );
-  }
-
   return (
-    <Shell
-      rightSlot={
-        <>
-          <span className="hidden text-label-medium uppercase tracking-wide text-on-surface-variant/70 md:block">
-            Aprendizado &amp; Oportunidades
-          </span>
-          <Button variant="tonal" size="sm" onClick={() => setCurrentPage('student-perfil')}>
-            <Icon name="badge" size="1.1rem" />
-            Meu Perfil
-          </Button>
-        </>
-      }
-      onLogoClick={() => {
-        setCurrentPage('dashboard');
-        setActiveProjectId(null);
-      }}
-      onLogout={handleLogoutClick}
-    >
-      {studentContent}
+    <Shell navItems={NAV_ALUNO} homePath="/" onLogout={handleLogoutClick}>
+      <Routes>
+        <Route path="/" element={<FeedPage />} />
+        <Route path="/desafios/:id" element={<DesafioPage />} />
+        <Route path="/perfil" element={<PerfilAlunoPage alunoId={userProfile.id} />} />
+        <Route path="/perfil/editar" element={<PerfilEditarPage />} />
+        <Route path="/empresas/:id" element={<PerfilEmpresaPage linkParaDesafios />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Shell>
   );
 }
